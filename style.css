@@ -65,52 +65,63 @@ body::after {
 /* ── Letter screen ── */
 
 .letter-wrap {
-  width: min(600px, calc(100vw - 32px));
-  padding: 40px 36px;
-  background: rgba(14, 6, 6, 0.72);
+  width: min(720px, calc(100vw - 32px));
+  padding: 56px 52px;
+  background: rgba(14, 6, 6, 0.76);
   border: 1px solid rgba(255, 215, 0, 0.14);
-  border-radius: 20px;
+  border-radius: 18px;
   box-shadow:
-    0 24px 64px rgba(0, 0, 0, 0.65),
+    0 28px 72px rgba(0, 0, 0, 0.70),
     0 0 0 1px rgba(255, 215, 0, 0.06),
-    0 0 60px rgba(180, 20, 20, 0.09);
-  backdrop-filter: blur(8px);
+    0 0 60px rgba(180, 20, 20, 0.10),
+    inset 0 1px 0 rgba(255, 215, 0, 0.07);
+  backdrop-filter: blur(14px);
   text-align: center;
-  max-height: calc(100vh - 80px);
+  max-height: calc(100vh - 64px);
   overflow-y: auto;
 }
 
+.letter-wrap h1 {
+  font-size: clamp(40px, 4.5vw, 54px);
+  margin-bottom: 24px;
+  letter-spacing: 0.5px;
+}
+
 .letter-headline {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
-  color: rgba(255, 215, 0, 0.82);
+  color: rgba(255, 215, 0, 0.9);
+  letter-spacing: 0.6px;
   opacity: 1;
-  margin: 0 0 20px;
+  margin: 0 0 18px;
   line-height: 1.55;
   display: block;
 }
 
 .letter-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
   text-align: left;
   margin: 0 0 18px;
 }
 
 .letter-body p {
-  font-size: 15px;
+  font-size: 18px;
   line-height: 1.85;
-  opacity: 0.88;
-  margin: 8px 0;
-  max-width: 100%;
+  opacity: 0.95;
+  margin: 0;
+  max-width: 60ch;
 }
 
 /* ── Sticker bar ── */
 
 .sticker-bar {
   display: flex;
-  gap: 8px;
+  gap: 18px;
   flex-wrap: wrap;
   justify-content: center;
-  margin: 20px 0 6px;
+  margin: 32px 0 28px;
 }
 
 .sticker {
@@ -194,16 +205,16 @@ body::after {
 
 .letter-actions {
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  margin-top: 4px;
+  flex-direction: row;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 12px;
 }
 
 .letter-actions button {
   margin-top: 0;
-  width: 100%;
-  max-width: 280px;
+  min-width: 160px;
+  padding: 13px 24px;
 }
 
 .btn-secondary {
@@ -219,6 +230,25 @@ body::after {
   background: rgba(255, 215, 0, 0.07);
   border-color: rgba(255, 215, 0, 0.32);
   color: #fff;
+}
+
+/* ── Letter mobile ── */
+
+@media (max-width: 560px) {
+  .letter-wrap {
+    padding: 32px 24px;
+  }
+  .letter-body p {
+    font-size: 16px;
+  }
+  .letter-actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  .letter-actions button {
+    width: 100%;
+    max-width: 280px;
+  }
 }
 
 /* ── Reduced motion ── */
