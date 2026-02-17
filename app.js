@@ -831,6 +831,7 @@ function applyIntroGate() {
   var unlocked = getIntroUnlocked();
   enterBtn.disabled = !unlocked;
   enterBtn.classList.toggle('is-disabled', !unlocked);
+  enterBtn.setAttribute('aria-disabled', unlocked ? 'false' : 'true');
   enterBtn.title = unlocked ? '' : 'Bắn pháo hoa trước đã 😎';
 }
 
@@ -841,19 +842,38 @@ document.addEventListener('DOMContentLoaded', function () {
     window.history.replaceState({}, '', window.location.pathname);
   }
 
+  // Strip ALL previous listeners by replacing node (cloneNode drops addEventListener bindings)
+  function rebind(id, fn) {
+    var el = document.getElementById(id);
+    if (!el) return null;
+    var fresh = el.cloneNode(true);
+    el.parentNode.replaceChild(fresh, el);
+    fresh.addEventListener('click', fn);
+    return fresh;
+  }
+
   applyIntroGate();
 
-  document.getElementById('btnLetterNext').onclick = function () {
-    if (!getIntroUnlocked()) return;
-    showScreen('s-pick');
-  };
-
-  document.getElementById('btnPreviewFireworks').onclick = function () {
+  rebind('btnPreviewFireworks', function () {
     launchTetTransition(function () {
       setIntroUnlocked();
       applyIntroGate();
     }, OPTS_PREVIEW);
-  };
+  });
+
+  rebind('btnLetterNext', function (e) {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!getIntroUnlocked()) {
+      alert('Bắn pháo hoa trước đã 😎');
+      return;
+    }
+    showScreen('s-pick');
+  });
+
+  // applyIntroGate again — rebind replaced the DOM node, re-apply disabled state
+  applyIntroGate();
+
   renderNameList();
 
   document.getElementById('btnHowtoClose').onclick = hideHowto;
