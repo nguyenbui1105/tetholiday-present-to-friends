@@ -72,6 +72,12 @@ function stand() {
   }, 700);
 }
 
+function goForm() {
+  showScreen('s-form');
+  document.getElementById('playerName').value = state.playerName;
+  document.getElementById('amountInput').value = state.amount;
+}
+
 function renderNameList() {
   var container = document.getElementById('nameList');
   container.innerHTML = '';
