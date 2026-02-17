@@ -1,5 +1,7 @@
 var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgolypwz';
 
+var ENVELOPES = [68000, 99000, 128000, 188000, 159000];
+
 var DEMO_SCRIPT = {
   playerStart: ['10♠', '6♦'],
   playerHit: ['5♥'],
@@ -11,6 +13,17 @@ var state = {
   playerName: null,
   game: null
 };
+
+function getPickedEnvIndex(playerKey) {
+  var v = localStorage.getItem('pickedEnvelope_' + playerKey);
+  if (v === null) return null;
+  var n = Number(v);
+  return Number.isInteger(n) ? n : null;
+}
+
+function setPickedEnvIndex(playerKey, idx) {
+  localStorage.setItem('pickedEnvelope_' + playerKey, String(idx));
+}
 
 function isClaimed(playerKey) {
   return localStorage.getItem('claimed_' + playerKey) === '1';
@@ -25,6 +38,10 @@ function showScreen(id) {
     el.classList.remove('active');
   });
   document.getElementById(id).classList.add('active');
+  if (id === 's-reward') {
+    console.log('[nav] entered reward');
+    setupRewardUI();
+  }
 }
 
 function renderGame() {
@@ -80,6 +97,59 @@ function stand() {
   setTimeout(function () {
     showScreen('s-reward');
   }, 700);
+}
+
+function setupRewardUI() {
+  var btn = document.getElementById('btnOpenReward');
+  var closed = document.getElementById('rewardClosed');
+  var opened = document.getElementById('rewardOpened');
+  var envStage = document.getElementById('envelopeStage');
+  var result = document.getElementById('rewardResult');
+  if (!btn || !closed || !opened) return;
+
+  var picked = getPickedEnvIndex(state.playerKey);
+
+  if (picked !== null) {
+    closed.style.display = 'none';
+    opened.style.display = 'block';
+    envStage.style.display = 'none';
+    result.style.display = 'block';
+    renderReward();
+    return;
+  }
+
+  closed.style.display = 'block';
+  opened.style.display = 'none';
+  envStage.style.display = 'block';
+  result.style.display = 'none';
+
+  var newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener('click', function () {
+    console.log('[reward] open clicked', { playerKey: state.playerKey, playerName: state.playerName });
+    closed.style.display = 'none';
+    opened.style.display = 'block';
+  });
+
+  document.querySelectorAll('#envelopeGrid .envelope').forEach(function (envBtn) {
+    envBtn.addEventListener('click', function () {
+      if (getPickedEnvIndex(state.playerKey) !== null) return;
+      var idx = Number(envBtn.dataset.env);
+      setPickedEnvIndex(state.playerKey, idx);
+      envStage.style.display = 'none';
+      result.style.display = 'block';
+      renderReward();
+    });
+  });
+}
+
+function renderReward() {
+  var player = PLAYERS.find(function (p) { return p.key === state.playerKey; });
+  var picked = getPickedEnvIndex(state.playerKey);
+  if (picked === null) return;
+  state.amount = ENVELOPES[picked];
+  document.getElementById('amountText').textContent = 'Lì xì: ' + state.amount.toLocaleString('vi-VN') + 'đ';
+  document.getElementById('wishText').textContent = player ? player.wish : '';
 }
 
 function goForm() {
