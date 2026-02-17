@@ -243,6 +243,22 @@ function renderNameList() {
     });
     container.appendChild(btn);
   });
+
+  if (DEV) {
+    var resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.textContent = 'Reset (DEV)';
+    resetBtn.style.cssText = 'opacity:0.5;font-size:12px;margin-top:12px;';
+    resetBtn.addEventListener('click', function () {
+      PLAYERS.forEach(function (p) {
+        localStorage.removeItem(claimedKey(p.key));
+        localStorage.removeItem(pickedKey(p.key));
+      });
+      console.debug('[dev] reset all players');
+      alert('All players reset.');
+    });
+    container.parentNode.appendChild(resetBtn);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function () {
