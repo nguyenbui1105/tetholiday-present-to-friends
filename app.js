@@ -146,12 +146,14 @@ function renderGame() {
       '<button type="button" onclick="stand()">Stand</button>';
   }
 
+  var revealLine = g.finished ? '<p class="reveal">✨ Ván này là: ' + g.winLabel + '</p>' : '';
+
   section.innerHTML =
     '<h1>' + state.playerName + '</h1>' +
-    '<p>Kiểu ván: ' + g.winLabel + '</p>' +
     '<p>Your cards: ' + playerCardsText + '</p>' +
     '<p>Dealer cards: ' + dealerCardsText + '</p>' +
     '<p id="gameStatus">' + g.statusText + '</p>' +
+    revealLine +
     buttons;
 }
 
