@@ -12,6 +12,14 @@ var state = {
   game: null
 };
 
+function isClaimed(playerKey) {
+  return localStorage.getItem('claimed_' + playerKey) === '1';
+}
+
+function setClaimed(playerKey) {
+  localStorage.setItem('claimed_' + playerKey, '1');
+}
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function (el) {
     el.classList.remove('active');
@@ -90,6 +98,10 @@ function renderNameList() {
     btn.addEventListener('click', function () {
       state.playerKey = player.key;
       state.playerName = player.name;
+      if (isClaimed(state.playerKey)) {
+        showScreen('s-end');
+        return;
+      }
       showScreen('s-game');
       startGame();
     });
@@ -114,6 +126,8 @@ document.addEventListener('DOMContentLoaded', function () {
       headers: { 'Accept': 'application/json' }
     }).then(function (response) {
       if (response.ok) {
+        setClaimed(state.playerKey);
+        form.reset();
         showScreen('s-end');
       } else {
         alert('Gửi chưa thành công, thử lại giúp mình nhé.');
