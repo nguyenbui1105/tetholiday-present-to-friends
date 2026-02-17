@@ -2,38 +2,17 @@ var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgolypwz';
 
 var ENVELOPES = [68000, 99000, 128000, 188000, 159000];
 
-/* ── Rigged decks ──────────────────────────────────────────────
-   Order: [player0, player1, dealer0, dealer1, draw0, draw1, …]
-   Player gets [0],[1]; dealer gets [2],[3]; remaining drawn in order.
-   Multiple variants per player keyed by attempt index.           */
-var RIGGED_DECKS = {
-  han_bui: [
-    // Ngũ linh path: bốc 3× → 5 cards total 20 ≤ 21. Past 5 → K♦ busts.
-    ['3♠', '4♦', '10♣', '9♠', '2♥', '5♣', '6♠', 'K♦', 'Q♥', '7♣']
-  ],
-  boi: [
-    // Stand at 18 → dealer 16 draws 6♥ → 22 bust. Bốc 6♥ → 24 bust.
-    ['10♠', '8♦', '9♣', '7♠', '6♥', 'K♦', '3♣', '9♦']
-  ],
-  ngan: [
-    // Attempt 0: player 16, dealer 18. Bốc 9♥→25 bust. Stand→lose.
-    ['10♠', '6♦', '10♣', '8♠', '9♥', 'K♦', '7♣'],
-    // Attempt 1: player 11, bốc 10♥→21, stand→win vs dealer 17.
-    ['5♠', '6♦', '10♣', '7♠', '10♥', '3♣', '8♦', 'K♠']
-  ],
-  diep: [
-    // Attempt 0: player 15, bốc K♥→25 bust. Stand→lose vs 20.
-    ['8♠', '7♦', '10♣', '10♠', 'K♥', '5♣', '3♦'],
-    // Attempt 1: A♠ + K♦ = xì dách! Auto-win.
-    ['A♠', 'K♦', '9♣', '8♠', '2♥', '3♣', '4♦']
-  ],
-  ngoc: [
-    // Player 19, stand → dealer 16+A→17, 19 > 17 win.
-    ['10♠', '9♦', '10♣', '6♠', 'A♥', '2♣', '9♣', '7♥']
-  ]
+/* ── Per-player bias ──────────────────────────────────────────
+   After a standard 52-card shuffle, we nudge a couple of cards
+   matching favoredRanks into the player's opening hand (pos 0-1).
+   This keeps each deal random but gives a "lucky" feel.          */
+var PLAYER_BIAS = {
+  han_bui: ['A', '2', '3', '4', '5'],   // low cards → ngũ linh friendly
+  boi:     ['10', '9', '8'],             // high pair → stand-and-win
+  ngan:    ['5', '6', '7', '10'],        // mid range, adaptable
+  diep:    ['A', 'K', 'Q', '10'],        // high → xì dách potential
+  ngoc:    ['10', '9', '8']              // strong start
 };
-
-var FALLBACK_DECK = ['10♠', '8♦', '9♣', '7♠', '5♥', '3♣', '7♦', 'K♠', '6♥'];
 
 var DEV = new URL(location.href).searchParams.has('dev');
 
@@ -179,16 +158,49 @@ function isNguLinh(cards) {
   return cards.length === 5 && calcTotal(cards) <= 21;
 }
 
-function randomCard() {
-  return RANKS[Math.floor(Math.random() * RANKS.length)] +
-         SUITS[Math.floor(Math.random() * SUITS.length)];
+function buildStandardDeck() {
+  var deck = [];
+  for (var r = 0; r < RANKS.length; r++) {
+    for (var s = 0; s < SUITS.length; s++) {
+      deck.push(RANKS[r] + SUITS[s]);
+    }
+  }
+  return deck;
+}
+
+function shuffle(arr) {
+  for (var i = arr.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = arr[i];
+    arr[i] = arr[j];
+    arr[j] = tmp;
+  }
+  return arr;
+}
+
+function applyBias(deck, favoredRanks) {
+  if (!favoredRanks || favoredRanks.length === 0) return;
+  // Find indices of cards whose rank is in favoredRanks (skip pos 0-1)
+  var candidates = [];
+  for (var i = 2; i < deck.length; i++) {
+    var rank = parseCard(deck[i]).rank;
+    if (favoredRanks.indexOf(rank) !== -1) candidates.push(i);
+  }
+  if (candidates.length === 0) return;
+  // Swap 1-2 random favored cards into player positions (0, 1)
+  var count = Math.min(2, candidates.length);
+  for (var p = 0; p < count; p++) {
+    var pick = Math.floor(Math.random() * candidates.length);
+    var ci = candidates[pick];
+    var tmp = deck[p];
+    deck[p] = deck[ci];
+    deck[ci] = tmp;
+    candidates.splice(pick, 1);
+  }
 }
 
 function drawCard(g) {
-  if (g.deckIndex < g.deck.length) {
-    return g.deck[g.deckIndex++];
-  }
-  return randomCard();
+  return g.deck[g.deckIndex++];
 }
 
 function renderGame() {
@@ -309,9 +321,9 @@ function renderGame() {
 }
 
 function startGame() {
-  var decks = RIGGED_DECKS[state.playerKey] || [FALLBACK_DECK];
-  var a = getAttempt(state.playerKey);
-  var deck = decks[a % decks.length].slice();
+  var deck = buildStandardDeck();
+  shuffle(deck);
+  applyBias(deck, PLAYER_BIAS[state.playerKey]);
 
   state.game = {
     playerCards: [deck[0], deck[1]],
@@ -325,8 +337,9 @@ function startGame() {
     animateMode: 'deal'
   };
 
-  if (DEV) console.log('[game] start | deck:', deck.join(', '),
-    '| player:', deck[0], deck[1], '| dealer:', deck[2], deck[3]);
+  if (DEV) console.log('[game] start | player:', deck[0], deck[1],
+    '| dealer:', deck[2], deck[3],
+    '| bias:', PLAYER_BIAS[state.playerKey] || 'none');
 
   renderGame();
 
