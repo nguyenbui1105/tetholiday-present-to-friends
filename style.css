@@ -1,3 +1,7 @@
+.hidden {
+  display: none !important;
+}
+
 .screen {
   grid-area: 1 / 1;
   width: 100%;
@@ -261,25 +265,10 @@ body::after {
     0 6px 18px rgba(0, 0, 0, 0.35);
 }
 
-/* Enter button — secondary size, clear disabled state */
+/* Enter button — secondary size */
 #btnLetterNext {
   font-size: 15px;
   padding: 12px 22px;
-}
-
-#btnLetterNext:disabled,
-#btnLetterNext.is-disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-  transform: none !important;
-  filter: grayscale(0.25);
-}
-
-#btnLetterNext:disabled:hover,
-#btnLetterNext.is-disabled:hover {
-  transform: none !important;
-  background: rgba(255, 255, 255, 0.06);
-  border-color: rgba(255, 215, 0, 0.25);
 }
 
 /* ── Letter mobile ── */

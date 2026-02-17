@@ -829,10 +829,7 @@ function applyIntroGate() {
   var enterBtn = document.getElementById('btnLetterNext');
   if (!enterBtn) return;
   var unlocked = getIntroUnlocked();
-  enterBtn.disabled = !unlocked;
-  enterBtn.classList.toggle('is-disabled', !unlocked);
-  enterBtn.setAttribute('aria-disabled', unlocked ? 'false' : 'true');
-  enterBtn.title = unlocked ? '' : 'Bắn pháo hoa trước đã 😎';
+  enterBtn.classList.toggle('hidden', !unlocked);
 }
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -864,10 +861,7 @@ document.addEventListener('DOMContentLoaded', function () {
   rebind('btnLetterNext', function (e) {
     e.preventDefault();
     e.stopPropagation();
-    if (!getIntroUnlocked()) {
-      alert('Bắn pháo hoa trước đã 😎');
-      return;
-    }
+    if (!getIntroUnlocked()) return; // hard guard
     showScreen('s-pick');
   });
 
