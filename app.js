@@ -711,27 +711,46 @@ function launchTetTransition(callback, opts) {
       var j = Math.floor(Math.random() * (i + 1));
       var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
     }
+
+    // Nine evenly-spaced horizontal lanes across the full viewport
+    var LANES    = [0.08, 0.18, 0.28, 0.38, 0.50, 0.62, 0.72, 0.82, 0.92];
+    var laneIdx  = Math.floor(Math.random() * LANES.length); // start at random lane
+    var lastX    = -999;
     var idx      = 0;
     var lastText = '';
+
     function spawnOne() {
       if (idx >= wishesCount) return;
-      // no-immediate-repeat guard
+
+      // No-immediate-repeat text guard
       var text = pool[idx % pool.length];
       if (text === lastText && pool.length > 1) {
         text = pool[(idx + 1) % pool.length];
       }
       lastText = text;
+
+      // Lane-based X: pick next lane + small jitter (±3% of width)
+      var jitter = (Math.random() - 0.5) * 0.06;
+      var xPct   = LANES[laneIdx % LANES.length] + jitter;
+      laneIdx++;
+      var x = Math.max(24, Math.min(xPct * W, W - 24));
+
+      // No-overlap guard: if within 120px of previous wish, shift right ~140px
+      if (Math.abs(x - lastX) < 120) {
+        x = x + 140 > W - 24 ? 24 + Math.random() * 60 : x + 140;
+      }
+      lastX = x;
+
       var el = document.createElement('div');
       el.className = 'wish';
       el.textContent = text;
-      var fromLeft = idx % 2 === 0;
-      el.style.left = fromLeft
-        ? (4 + Math.random() * 28) + '%'
-        : (62 + Math.random() * 28) + '%';
-      el.style.top = (18 + Math.random() * 52) + '%';
+      el.style.left = x + 'px';
+      // Vertical: between 25%–85% of viewport height
+      el.style.top  = (H * (0.25 + Math.random() * 0.60)) + 'px';
       el.style.animationDelay = '0ms';
       document.body.appendChild(el);
       idx++;
+
       setTimeout(function () {
         if (el.parentNode) el.parentNode.removeChild(el);
       }, 2500);

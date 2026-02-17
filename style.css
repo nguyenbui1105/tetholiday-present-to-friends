@@ -203,10 +203,10 @@ body::after {
 }
 
 @keyframes wish-float {
-  0%   { opacity: 0; transform: translateY(20px) scale(0.82); }
-  16%  { opacity: 1; transform: translateY(0px)  scale(1.05); }
-  72%  { opacity: 1; transform: translateY(-52px) scale(1); }
-  100% { opacity: 0; transform: translateY(-76px) scale(0.94); }
+  0%   { opacity: 0; transform: translateX(-50%) translateY(20px)  scale(0.82); }
+  16%  { opacity: 1; transform: translateX(-50%) translateY(0px)   scale(1.05); }
+  72%  { opacity: 1; transform: translateX(-50%) translateY(-52px) scale(1);    }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-76px) scale(0.94); }
 }
 
 /* ── Letter action buttons ── */
