@@ -818,7 +818,21 @@ function launchTetTransition(callback, opts) {
 }
 
 var OPTS_PREVIEW = { durationMs: 4200, wishesCount: 18, wishEveryMs: 160 };
-var OPTS_ENTER   = { durationMs: 3500, wishesCount: 14, wishEveryMs: 180 };
+
+function getIntroUnlocked() {
+  return localStorage.getItem('introFwPlayed') === '1';
+}
+function setIntroUnlocked() {
+  localStorage.setItem('introFwPlayed', '1');
+}
+function applyIntroGate() {
+  var enterBtn = document.getElementById('btnLetterNext');
+  if (!enterBtn) return;
+  var unlocked = getIntroUnlocked();
+  enterBtn.disabled = !unlocked;
+  enterBtn.classList.toggle('is-disabled', !unlocked);
+  enterBtn.title = unlocked ? '' : 'Bắn pháo hoa trước đã 😎';
+}
 
 document.addEventListener('DOMContentLoaded', function () {
   if (new URLSearchParams(window.location.search).get('reset') === '1') {
@@ -827,32 +841,18 @@ document.addEventListener('DOMContentLoaded', function () {
     window.history.replaceState({}, '', window.location.pathname);
   }
 
-  var btnNext    = document.getElementById('btnLetterNext');
-  var btnPreview = document.getElementById('btnPreviewFireworks');
+  applyIntroGate();
 
-  // Gate: require at least one fireworks preview before entering
-  var introFwPlayed = localStorage.getItem('introFwPlayed') === '1';
-
-  function unlockEnter() {
-    introFwPlayed = true;
-    localStorage.setItem('introFwPlayed', '1');
-    btnNext.disabled = false;
-    btnNext.textContent = 'Vào sòng';
-  }
-
-  if (!introFwPlayed) {
-    btnNext.disabled = true;
-    btnNext.textContent = 'Bắn pháo hoa trước đã 😎';
-  }
-
-  btnNext.onclick = function () {
-    if (btnNext.disabled) return;
+  document.getElementById('btnLetterNext').onclick = function () {
+    if (!getIntroUnlocked()) return;
     showScreen('s-pick');
   };
 
-  btnPreview.onclick = function () {
-    launchTetTransition(null, OPTS_PREVIEW);
-    if (!introFwPlayed) unlockEnter();
+  document.getElementById('btnPreviewFireworks').onclick = function () {
+    launchTetTransition(function () {
+      setIntroUnlocked();
+      applyIntroGate();
+    }, OPTS_PREVIEW);
   };
   renderNameList();
 
