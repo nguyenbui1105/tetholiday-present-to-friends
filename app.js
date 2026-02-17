@@ -595,6 +595,154 @@ function renderNameList() {
   });
 }
 
+/* ── Tet transition ── */
+
+var WISH_TEXTS = [
+  'Chúc mừng năm mới! 🎉',
+  'An khang thịnh vượng ✨',
+  'Tiền vô như nước 💰',
+  'Vạn sự như ý 🌟',
+  '8386 🧧',
+  'Lộc lá đầy nhà 🍀',
+  'Sức khỏe dồi dào 💪',
+  'Phát tài phát lộc 🎊',
+  'Năm mới vui vẻ 😊',
+  'Bình an may mắn 🌸'
+];
+
+function launchTetTransition(callback) {
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    callback();
+    return;
+  }
+
+  var overlay = document.getElementById('fwOverlay');
+  var canvas  = document.getElementById('fwCanvas');
+  overlay.classList.add('fw-active');
+
+  // Size canvas to full viewport at device pixel ratio
+  var dpr = window.devicePixelRatio || 1;
+  var W = window.innerWidth;
+  var H = window.innerHeight;
+  canvas.width  = W * dpr;
+  canvas.height = H * dpr;
+  var ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  var particles  = [];
+  var DURATION   = 2500;
+  var startTime  = 0;
+  var lastLaunch = -9999;
+  var rafId      = null;
+
+  var FW_COLORS = ['#ffd700', '#ff4444', '#ff9933', '#ff66aa', '#ffee33', '#ff3366', '#ff8800'];
+
+  function Particle(x, y, vx, vy, color, r) {
+    this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+    this.color = color; this.r = r;
+    this.alpha = 1; this.life = 0;
+  }
+  Particle.prototype.update = function () {
+    this.vy += 0.055;
+    this.vx *= 0.97;
+    this.vy *= 0.97;
+    this.x  += this.vx;
+    this.y  += this.vy;
+    this.life++;
+    this.alpha = Math.max(0, 1 - this.life / 65);
+  };
+  Particle.prototype.draw = function (c) {
+    c.globalAlpha = this.alpha;
+    c.beginPath();
+    c.arc(this.x, this.y, this.r, 0, Math.PI * 2);
+    c.fillStyle = this.color;
+    c.fill();
+  };
+
+  function launchFirework() {
+    var x = W * (0.18 + Math.random() * 0.64);
+    var y = H * (0.08 + Math.random() * 0.42);
+    var n = 55 + Math.floor(Math.random() * 45);
+    for (var i = 0; i < n; i++) {
+      var angle = (Math.PI * 2 * i) / n;
+      var speed = 1.8 + Math.random() * 4.2;
+      var color = FW_COLORS[Math.floor(Math.random() * FW_COLORS.length)];
+      particles.push(new Particle(
+        x, y,
+        Math.cos(angle) * speed,
+        Math.sin(angle) * speed,
+        color,
+        1.4 + Math.random() * 1.6
+      ));
+    }
+  }
+
+  function spawnWishes() {
+    // Fisher-Yates on a copy
+    var pool = WISH_TEXTS.slice();
+    for (var i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+    }
+    var total = 10 + Math.floor(Math.random() * 4);
+    var idx   = 0;
+    function spawnOne() {
+      if (idx >= total) return;
+      var el = document.createElement('div');
+      el.className = 'wish';
+      el.textContent = pool[idx % pool.length];
+      var fromLeft = idx % 2 === 0;
+      el.style.left = fromLeft
+        ? (4 + Math.random() * 28) + '%'
+        : (62 + Math.random() * 28) + '%';
+      el.style.top = (18 + Math.random() * 52) + '%';
+      el.style.animationDelay = (idx * 180) + 'ms';
+      document.body.appendChild(el);
+      idx++;
+      var cleanup = setTimeout(function () {
+        if (el.parentNode) el.parentNode.removeChild(el);
+      }, 2500);
+      el._cleanup = cleanup;
+      setTimeout(spawnOne, 180);
+    }
+    spawnOne();
+  }
+
+  function frame(now) {
+    if (!startTime) startTime = now;
+    var elapsed = now - startTime;
+
+    ctx.clearRect(0, 0, W, H);
+
+    if (now - lastLaunch > 370) {
+      launchFirework();
+      lastLaunch = now;
+    }
+
+    ctx.save();
+    for (var i = particles.length - 1; i >= 0; i--) {
+      particles[i].update();
+      particles[i].draw(ctx);
+      if (particles[i].alpha <= 0) particles.splice(i, 1);
+    }
+    ctx.restore();
+    ctx.globalAlpha = 1;
+
+    if (elapsed < DURATION) {
+      rafId = requestAnimationFrame(frame);
+    } else {
+      cancelAnimationFrame(rafId);
+      overlay.classList.remove('fw-active');
+      canvas.width = 0; // free memory
+      callback();
+    }
+  }
+
+  spawnWishes();
+  launchFirework(); // immediate first burst
+  rafId = requestAnimationFrame(frame);
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   if (new URLSearchParams(window.location.search).get('reset') === '1') {
     resetAllPlayerData();
@@ -603,7 +751,7 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   document.getElementById('btnLetterNext').addEventListener('click', function () {
-    showScreen('s-pick');
+    launchTetTransition(function () { showScreen('s-pick'); });
   });
   renderNameList();
 
