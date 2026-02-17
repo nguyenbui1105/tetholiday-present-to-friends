@@ -442,18 +442,41 @@ function resolveRound() {
   }
 }
 
-function setRewardState(closed, opened, envStage, result, s) {
-  if (DEV) console.log('[reward] setState:', s,
-    '| closed:', s === 'A' ? 'block' : 'none',
-    '| opened:', s === 'A' ? 'none' : 'block',
-    '| envStage:', s === 'B' ? 'block' : 'none',
-    '| result:', s === 'C' ? 'block' : 'none');
-  closed.style.display  = s === 'A' ? 'block' : 'none';
-  opened.style.display  = s === 'A' ? 'none'  : 'block';
+function setRewardState(s) {
+  var closed   = document.getElementById('rewardClosed');
+  var opened   = document.getElementById('rewardOpened');
+  var envStage = document.getElementById('envelopeStage');
+  var result   = document.getElementById('rewardResult');
+  var box      = document.getElementById('rewardBox');
+  if (!closed || !opened || !envStage || !result) return;
+
+  closed.style.display   = s === 'A' ? 'block' : 'none';
+  opened.style.display   = s === 'A' ? 'none'  : 'block';
   envStage.style.display = s === 'B' ? 'block' : 'none';
   result.style.display   = s === 'C' ? 'block' : 'none';
-  var box = document.getElementById('rewardBox');
   if (box) box.dataset.rewardState = s;
+
+  if (DEV) console.log('[reward] setState:', s,
+    '| closed:', closed.style.display,
+    '| opened:', opened.style.display,
+    '| envStage:', envStage.style.display,
+    '| result:', result.style.display);
+}
+
+function shuffleEnvelopeGrid() {
+  var grid = document.getElementById('envelopeGrid');
+  if (!grid) return;
+  var buttons = Array.prototype.slice.call(grid.querySelectorAll('.envelope'));
+  // Fisher-Yates shuffle
+  for (var i = buttons.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = buttons[i];
+    buttons[i] = buttons[j];
+    buttons[j] = temp;
+  }
+  buttons.forEach(function (btn) { grid.appendChild(btn); });
+  if (DEV) console.log('[reward] shuffled envelopes:',
+    buttons.map(function (b) { return b.dataset.env; }).join(','));
 }
 
 function setupRewardUI() {
@@ -461,43 +484,42 @@ function setupRewardUI() {
     showScreen('s-pick');
     return;
   }
-  var closed = document.getElementById('rewardClosed');
-  var opened = document.getElementById('rewardOpened');
-  var envStage = document.getElementById('envelopeStage');
-  var result = document.getElementById('rewardResult');
-  if (!closed || !opened || !envStage || !result) {
-    console.warn('[setupRewardUI] missing element:', { closed: !!closed, opened: !!opened, envStage: !!envStage, result: !!result });
-    return;
-  }
+
   var picked = getPickedEnvIndex(state.playerKey);
-  if (DEV) console.log('[reward] setupRewardUI enter | playerKey:', state.playerKey, '| picked:', picked,
-    '| localStorage:', localStorage.getItem(pickedKey(state.playerKey)));
+  if (DEV) console.log('[reward] setupRewardUI | playerKey:', state.playerKey,
+    '| picked:', picked,
+    '| raw:', localStorage.getItem(pickedKey(state.playerKey)));
 
   // State C: already picked — show result directly
   if (picked !== null) {
     if (DEV) console.log('[reward] → State C (already picked)');
-    setRewardState(closed, opened, envStage, result, 'C');
+    setRewardState('C');
     renderReward();
     return;
   }
 
-  // State A: show gift teaser
+  // State A: show gift teaser, clear any stale result content
   if (DEV) console.log('[reward] → State A (teaser)');
-  setRewardState(closed, opened, envStage, result, 'A');
+  setRewardState('A');
   state.amount = null;
+  document.getElementById('amountText').textContent = '';
+  document.getElementById('wishText').textContent = '';
 
-  // Wire "Mở quà" -> State B
+  // Wire "Mở quà" -> State B (shuffle + show envelopes)
   var openBtn = document.getElementById('btnOpenReward');
   if (openBtn) {
     var freshOpen = openBtn.cloneNode(true);
     openBtn.parentNode.replaceChild(freshOpen, openBtn);
     freshOpen.addEventListener('click', function () {
       if (DEV) console.log('[reward] → State B (envelopes)');
-      setRewardState(closed, opened, envStage, result, 'B');
+      shuffleEnvelopeGrid();
+      wireEnvelopeButtons();
+      setRewardState('B');
     });
   }
+}
 
-  // Wire envelopes -> State C
+function wireEnvelopeButtons() {
   document.querySelectorAll('#envelopeGrid .envelope').forEach(function (envBtn) {
     var fresh = envBtn.cloneNode(true);
     envBtn.parentNode.replaceChild(fresh, envBtn);
@@ -506,7 +528,7 @@ function setupRewardUI() {
       var idx = Number(fresh.dataset.env);
       if (DEV) console.log('[reward] envelope clicked idx:', idx, '→ State C');
       setPickedEnvIndex(state.playerKey, idx);
-      setRewardState(closed, opened, envStage, result, 'C');
+      setRewardState('C');
       renderReward();
     });
   });
