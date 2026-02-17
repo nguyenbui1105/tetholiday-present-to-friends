@@ -2,10 +2,52 @@ var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgolypwz';
 
 var ENVELOPES = [68000, 99000, 128000, 188000, 159000];
 
-var DEMO_SCRIPT = {
-  playerStart: ['10♠', '6♦'],
-  playerHit: ['5♥'],
-  dealerCards: ['9♣', '7♠', '8♦']
+var GAME_SCRIPTS = {
+  han_bui: [
+    { label: 'Ngũ linh may mắn', outcome: 'win',
+      playerStart: ['A♠', '2♦'], playerHit: ['3♥', 'A♣', '4♠'],
+      dealerCards: ['10♣', '7♠', '6♦'],
+      winText: 'Ngũ linh! 5 lá không quắc. Bạn thắng 😎' }
+  ],
+  boi: [
+    { label: 'Dealer quắc', outcome: 'win',
+      playerStart: ['10♠', '8♦'], playerHit: [],
+      dealerCards: ['9♣', '7♠', '8♦'],
+      winText: 'Dealer quắc. Bạn thắng 😎' }
+  ],
+  ngan: [
+    { label: 'Xui nhẹ đầu năm', outcome: 'lose',
+      playerStart: ['10♠', '6♦'], playerHit: ['9♥'],
+      dealerCards: ['10♣', '9♠'],
+      loseText: 'Quắc rồi 😭 Chơi lại nha!' },
+    { label: 'Lật kèo phút chót', outcome: 'win',
+      playerStart: ['5♠', '6♦'], playerHit: ['10♥'],
+      dealerCards: ['10♣', '7♠', '8♦'],
+      winText: 'Lật kèo! Dealer quắc. Bạn thắng 😎' }
+  ],
+  diep: [
+    { label: 'Thử vận may', outcome: 'lose',
+      playerStart: ['8♠', '7♦'], playerHit: ['K♥'],
+      dealerCards: ['10♣', '10♠'],
+      loseText: 'Quắc nhẹ 😅 Thử lại nha!' },
+    { label: '21 tự nhiên', outcome: 'win',
+      playerStart: ['A♠', 'K♦'], playerHit: [],
+      dealerCards: ['9♣', '8♠'],
+      winText: 'Xì dách! 21 tự nhiên. Bạn thắng 😎' }
+  ],
+  ngoc: [
+    { label: 'Đánh đâu thắng đó', outcome: 'win',
+      playerStart: ['10♠', '9♦'], playerHit: ['A♥'],
+      dealerCards: ['10♣', '6♠', '9♦'],
+      winText: '20 điểm! Dealer quắc. Bạn thắng 😎' }
+  ]
+};
+
+var FALLBACK_SCRIPT = {
+  label: 'Ván may mắn', outcome: 'win',
+  playerStart: ['10♠', '6♦'], playerHit: ['5♥'],
+  dealerCards: ['9♣', '7♠', '8♦'],
+  winText: 'Dealer quắc. Bạn thắng 😎'
 };
 
 var DEV = new URL(location.href).searchParams.has('dev');
@@ -47,10 +89,28 @@ function setClaimed(playerKey) {
   localStorage.setItem(claimedKey(playerKey), '1');
 }
 
+function attemptKey(playerKey) {
+  return 'attempt_' + playerKey;
+}
+
+function getAttempt(playerKey) {
+  var v = localStorage.getItem(attemptKey(playerKey));
+  return v ? Number(v) : 0;
+}
+
+function bumpAttempt(playerKey) {
+  localStorage.setItem(attemptKey(playerKey), String(getAttempt(playerKey) + 1));
+}
+
+function resetAttempt(playerKey) {
+  localStorage.removeItem(attemptKey(playerKey));
+}
+
 function resetAllPlayerData() {
   PLAYERS.forEach(function (p) {
     localStorage.removeItem(pickedKey(p.key));
     localStorage.removeItem(claimedKey(p.key));
+    localStorage.removeItem(attemptKey(p.key));
   });
 }
 
@@ -76,21 +136,40 @@ function renderGame() {
     return c;
   }).join('  ');
 
+  var buttons;
+  if (g.finished && g.outcome === 'lose') {
+    buttons = '<button type="button" onclick="startGame()">Chơi lại</button>';
+  } else if (g.finished) {
+    buttons = '';
+  } else {
+    buttons = '<button type="button" onclick="hit()">Hit</button> ' +
+      '<button type="button" onclick="stand()">Stand</button>';
+  }
+
   section.innerHTML =
-    '<h1>Player: ' + state.playerName + '</h1>' +
+    '<h1>' + state.playerName + '</h1>' +
+    '<p>Kiểu ván: ' + g.winLabel + '</p>' +
     '<p>Your cards: ' + playerCardsText + '</p>' +
     '<p>Dealer cards: ' + dealerCardsText + '</p>' +
     '<p id="gameStatus">' + g.statusText + '</p>' +
-    '<button type="button" onclick="hit()">Hit</button> ' +
-    '<button type="button" onclick="stand()">Stand</button>';
+    buttons;
 }
 
 function startGame() {
+  var scripts = GAME_SCRIPTS[state.playerKey] || [FALLBACK_SCRIPT];
+  var a = getAttempt(state.playerKey);
+  var script = scripts[a % scripts.length];
+
   state.game = {
-    playerCards: DEMO_SCRIPT.playerStart.slice(),
-    dealerCards: DEMO_SCRIPT.dealerCards.slice(),
+    playerCards: script.playerStart.slice(),
+    dealerCards: script.dealerCards.slice(),
+    playerHit: script.playerHit.slice(),
     hitIndex: 0,
     finished: false,
+    outcome: script.outcome,
+    winLabel: script.label,
+    winText: script.winText || '',
+    loseText: script.loseText || '',
     statusText: 'Hit or Stand?'
   };
   renderGame();
@@ -99,11 +178,11 @@ function startGame() {
 function hit() {
   var g = state.game;
   if (g.finished) return;
-  if (g.hitIndex < DEMO_SCRIPT.playerHit.length) {
-    g.playerCards.push(DEMO_SCRIPT.playerHit[g.hitIndex]);
+  if (g.hitIndex < g.playerHit.length) {
+    g.playerCards.push(g.playerHit[g.hitIndex]);
     g.hitIndex++;
-    if (g.hitIndex >= DEMO_SCRIPT.playerHit.length) {
-      g.statusText = 'No more hits. Stand to finish.';
+    if (g.hitIndex >= g.playerHit.length) {
+      g.statusText = 'Hết bài rồi. Stand để chốt.';
     }
     renderGame();
   }
@@ -113,11 +192,19 @@ function stand() {
   var g = state.game;
   if (g.finished) return;
   g.finished = true;
-  g.statusText = 'Dealer bust. You win.';
-  renderGame();
-  setTimeout(function () {
-    showScreen('s-reward');
-  }, 700);
+
+  if (g.outcome === 'win') {
+    g.statusText = g.winText;
+    resetAttempt(state.playerKey);
+    renderGame();
+    setTimeout(function () {
+      showScreen('s-reward');
+    }, 700);
+  } else {
+    g.statusText = g.loseText;
+    bumpAttempt(state.playerKey);
+    renderGame();
+  }
 }
 
 function setupRewardUI() {
@@ -288,7 +375,8 @@ document.addEventListener('DOMContentLoaded', function () {
       var rows = PLAYERS.map(function (p) {
         var c = isClaimed(p.key) ? '1' : '0';
         var pk = getPickedEnvIndex(p.key);
-        return p.key + '  claimed=' + c + '  picked=' + (pk !== null ? pk : '-');
+        var att = getAttempt(p.key);
+        return p.key + '  claimed=' + c + '  picked=' + (pk !== null ? pk : '-') + '  attempt=' + att;
       });
       table.textContent = rows.join('  |  ');
     }
