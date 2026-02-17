@@ -207,7 +207,7 @@ function renderGame() {
   playerBlock.className = 'hand-block';
   var playerTitle = document.createElement('div');
   playerTitle.className = 'hand-title';
-  playerTitle.textContent = 'BẠN: ' + state.playerName;
+  playerTitle.textContent = 'CON BẠC: ' + state.playerName;
   playerBlock.appendChild(playerTitle);
 
   var playerHand = document.createElement('div');
@@ -228,11 +228,13 @@ function renderGame() {
   playerBlock.appendChild(playerHand);
   table.appendChild(playerBlock);
 
-  // --- Status ---
-  var status = document.createElement('p');
-  status.id = 'gameStatus';
-  status.textContent = g.statusText;
-  table.appendChild(status);
+  // --- Status (only when finished) ---
+  if (g.finished) {
+    var status = document.createElement('p');
+    status.id = 'gameStatus';
+    status.textContent = g.statusText;
+    table.appendChild(status);
+  }
 
   // --- Reveal line ---
   if (g.finished) {
@@ -253,10 +255,15 @@ function renderGame() {
     retryBtn.addEventListener('click', startGame);
     btnRow.appendChild(retryBtn);
   } else if (!g.finished) {
+    var hasMoreHits = g.hitIndex < g.playerHit.length;
     var hitBtn = document.createElement('button');
     hitBtn.type = 'button';
     hitBtn.textContent = 'Bốc';
-    hitBtn.addEventListener('click', hit);
+    if (hasMoreHits) {
+      hitBtn.addEventListener('click', hit);
+    } else {
+      hitBtn.disabled = true;
+    }
     btnRow.appendChild(hitBtn);
 
     var standBtn = document.createElement('button');
@@ -285,7 +292,7 @@ function startGame() {
     winLabel: script.label,
     winText: script.winText || '',
     loseText: script.loseText || '',
-    statusText: 'Hit or Stand?',
+    statusText: '',
     animateMode: 'deal'
   };
   renderGame();
@@ -298,7 +305,7 @@ function hit() {
     g.playerCards.push(g.playerHit[g.hitIndex]);
     g.hitIndex++;
     if (g.hitIndex >= g.playerHit.length) {
-      g.statusText = 'Hết bài rồi. Stand để chốt.';
+      g.statusText = '';
     }
     g.animateMode = 'hit';
     renderGame();
