@@ -1,4 +1,4 @@
-var FORMSPREE_ENDPOINT = 'https://formspree.io/f/REPLACE_ME';
+var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgolypwz';
 
 var DEMO_SCRIPT = {
   playerStart: ['10♠', '6♦'],
