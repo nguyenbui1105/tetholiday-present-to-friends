@@ -47,6 +47,13 @@ function setClaimed(playerKey) {
   localStorage.setItem(claimedKey(playerKey), '1');
 }
 
+function resetAllPlayerData() {
+  PLAYERS.forEach(function (p) {
+    localStorage.removeItem(pickedKey(p.key));
+    localStorage.removeItem(claimedKey(p.key));
+  });
+}
+
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(function (el) {
     el.classList.remove('active');
@@ -220,10 +227,7 @@ function renderNameList() {
 
 document.addEventListener('DOMContentLoaded', function () {
   if (new URLSearchParams(window.location.search).get('reset') === '1') {
-    PLAYERS.forEach(function (p) {
-      localStorage.removeItem(pickedKey(p.key));
-      localStorage.removeItem(claimedKey(p.key));
-    });
+    resetAllPlayerData();
     if (DEV) console.log('[reset] cleared all player keys');
     window.history.replaceState({}, '', window.location.pathname);
   }
@@ -256,4 +260,39 @@ document.addEventListener('DOMContentLoaded', function () {
       submitBtn.disabled = false;
     });
   });
+
+  // DEV panel: player state table + reset button
+  if (DEV) {
+    var panel = document.createElement('div');
+    panel.id = 'devPanel';
+    panel.style.cssText = 'position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,0.9);' +
+      'color:#aaa;font:11px/1.4 monospace;padding:8px 12px;z-index:9999;border-top:1px solid #333;';
+
+    var table = document.createElement('div');
+    table.id = 'devTable';
+    panel.appendChild(table);
+
+    var resetBtn = document.createElement('button');
+    resetBtn.type = 'button';
+    resetBtn.textContent = 'Reset all test data';
+    resetBtn.style.cssText = 'margin-top:6px;padding:4px 10px;font:11px monospace;' +
+      'background:#611;color:#faa;border:1px solid #833;border-radius:4px;cursor:pointer;';
+    resetBtn.addEventListener('click', function () {
+      resetAllPlayerData();
+      location.reload();
+    });
+    panel.appendChild(resetBtn);
+    document.body.appendChild(panel);
+
+    function refreshDevTable() {
+      var rows = PLAYERS.map(function (p) {
+        var c = isClaimed(p.key) ? '1' : '0';
+        var pk = getPickedEnvIndex(p.key);
+        return p.key + '  claimed=' + c + '  picked=' + (pk !== null ? pk : '-');
+      });
+      table.textContent = rows.join('  |  ');
+    }
+    refreshDevTable();
+    setInterval(refreshDevTable, 1000);
+  }
 });
