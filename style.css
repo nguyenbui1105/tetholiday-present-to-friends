@@ -62,7 +62,9 @@ body::after {
     radial-gradient(circle 2px at 79% 69%, rgba(255, 215, 0,   0.10) 50%, transparent 100%);
 }
 
-/* ── Letter screen ── */
+/* ───────────────────────────── */
+/* ── Letter screen ──────────── */
+/* ───────────────────────────── */
 
 .letter-wrap {
   width: min(720px, calc(100vw - 32px));
@@ -81,38 +83,44 @@ body::after {
   overflow-y: auto;
 }
 
+/* Title */
 .letter-wrap h1 {
   font-size: clamp(40px, 4.5vw, 54px);
   margin-bottom: 24px;
-  letter-spacing: 0.5px;
+  letter-spacing: -0.2px;
 }
 
+/* Gold sub headline */
 .letter-headline {
   font-size: 16px;
   font-weight: 700;
   color: rgba(255, 215, 0, 0.9);
   letter-spacing: 0.6px;
-  opacity: 1;
-  margin: 0 0 18px;
+  margin: 0 auto 22px;
   line-height: 1.55;
-  display: block;
+  max-width: 60ch;       /* 👈 cùng cột với body */
+  text-align: center;
 }
 
+/* Paragraph container */
 .letter-body {
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  text-align: left;
-  margin: 0 0 18px;
+  gap: 20px;
+  margin-bottom: 28px;
 }
 
+/* Individual paragraphs */
 .letter-body p {
   font-size: 18px;
   line-height: 1.85;
   opacity: 0.95;
-  margin: 0;
-  max-width: 60ch;
+  margin: 0 auto;        /* 👈 CĂN GIỮA BLOCK */
+  width: 100%;
+  max-width: 60ch;       /* 👈 Giới hạn chiều rộng đẹp */
+  text-align: left;      /* 👈 Vẫn giữ đọc tự nhiên */
 }
+
 
 /* ── Sticker bar ── */
 
@@ -230,6 +238,46 @@ body::after {
   background: rgba(255, 215, 0, 0.07);
   border-color: rgba(255, 215, 0, 0.32);
   color: #fff;
+}
+
+/* Preview fireworks — prominent CTA to unlock enter */
+#btnPreviewFireworks {
+  font-size: 18px;
+  padding: 14px 22px;
+  border-radius: 16px;
+  background: rgba(255, 215, 0, 0.09);
+  border-color: rgba(255, 215, 0, 0.38);
+  color: #fff;
+  box-shadow:
+    0 0 18px rgba(255, 215, 0, 0.13),
+    0 4px 14px rgba(0, 0, 0, 0.30);
+}
+
+#btnPreviewFireworks:hover {
+  background: rgba(255, 215, 0, 0.18);
+  border-color: rgba(255, 215, 0, 0.58);
+  box-shadow:
+    0 0 30px rgba(255, 215, 0, 0.22),
+    0 6px 18px rgba(0, 0, 0, 0.35);
+}
+
+/* Enter button — secondary size, clear disabled state */
+#btnLetterNext {
+  font-size: 15px;
+  padding: 12px 22px;
+}
+
+#btnLetterNext:disabled {
+  opacity: 0.38;
+  cursor: not-allowed;
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+#btnLetterNext:disabled:hover {
+  transform: none;
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 215, 0, 0.25);
 }
 
 /* ── Letter mobile ── */

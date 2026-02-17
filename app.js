@@ -607,11 +607,38 @@ var WISH_TEXTS = [
   'Sức khỏe dồi dào 💪',
   'Phát tài phát lộc 🎊',
   'Năm mới vui vẻ 😊',
-  'Bình an may mắn 🌸'
+  'Bình an may mắn 🌸',
+  'Lương tăng đều như loss giảm 📈',
+  'Crush tự đổ, không cần push 😌',
+  'Sáng dậy thấy tiền về tài khoản 💳',
+  'Chơi đâu thắng đó 🎰',
+  'Con đường sự nghiệp full xanh 🟢',
+  'Deadline né bạn như né drama 🏃',
+  'Học đâu hiểu đó, thi đâu trúng đó 📚',
+  'Ăn hoài không mập 🍜',
+  'Ngủ ít vẫn đẹp 😴✨',
+  'Trúng lì xì to như jackpot 💎',
+  'Năm mới không “red flag” 🚩❌',
+  'Tài khoản ngân hàng nở hoa 🌺💵',
+  'May mắn bao vây như WiFi full vạch 📶',
+  'Chủ Sòng luôn đứng về phía bạn 🧧😌',
+  'Mở bài là thắng, kết bài là giàu 💰',
+  'Một năm không drama, chỉ có data 📊',
+  'Làm ít hưởng nhiều 😆',
+  'Cười nhiều hơn stress 😂',
+  'Đầu năm rực rỡ, cuối năm dư dả 🌟',
+  'Mọi ván bài đều ra 21 🎴',
+  'Sống chill như nghỉ lễ dài ngày 🌴'
 ];
 
-function launchTetTransition(callback) {
+
+function launchTetTransition(callback, opts) {
   var done = typeof callback === 'function' ? callback : function () {};
+  opts = opts || {};
+  var DURATION    = opts.durationMs  || 2500;
+  var wishesCount = opts.wishesCount || 12;
+  var wishEveryMs = opts.wishEveryMs || 180;
+
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
     done();
     return;
@@ -631,7 +658,6 @@ function launchTetTransition(callback) {
   ctx.scale(dpr, dpr);
 
   var particles  = [];
-  var DURATION   = 2500;
   var startTime  = 0;
   var lastLaunch = -9999;
   var rafId      = null;
@@ -679,32 +705,37 @@ function launchTetTransition(callback) {
   }
 
   function spawnWishes() {
-    // Fisher-Yates on a copy
+    // Fisher-Yates shuffle on a copy
     var pool = WISH_TEXTS.slice();
     for (var i = pool.length - 1; i > 0; i--) {
       var j = Math.floor(Math.random() * (i + 1));
       var t = pool[i]; pool[i] = pool[j]; pool[j] = t;
     }
-    var total = 10 + Math.floor(Math.random() * 4);
-    var idx   = 0;
+    var idx      = 0;
+    var lastText = '';
     function spawnOne() {
-      if (idx >= total) return;
+      if (idx >= wishesCount) return;
+      // no-immediate-repeat guard
+      var text = pool[idx % pool.length];
+      if (text === lastText && pool.length > 1) {
+        text = pool[(idx + 1) % pool.length];
+      }
+      lastText = text;
       var el = document.createElement('div');
       el.className = 'wish';
-      el.textContent = pool[idx % pool.length];
+      el.textContent = text;
       var fromLeft = idx % 2 === 0;
       el.style.left = fromLeft
         ? (4 + Math.random() * 28) + '%'
         : (62 + Math.random() * 28) + '%';
       el.style.top = (18 + Math.random() * 52) + '%';
-      el.style.animationDelay = (idx * 180) + 'ms';
+      el.style.animationDelay = '0ms';
       document.body.appendChild(el);
       idx++;
-      var cleanup = setTimeout(function () {
+      setTimeout(function () {
         if (el.parentNode) el.parentNode.removeChild(el);
       }, 2500);
-      el._cleanup = cleanup;
-      setTimeout(spawnOne, 180);
+      setTimeout(spawnOne, wishEveryMs);
     }
     spawnOne();
   }
@@ -744,6 +775,9 @@ function launchTetTransition(callback) {
   rafId = requestAnimationFrame(frame);
 }
 
+var OPTS_PREVIEW = { durationMs: 4200, wishesCount: 18, wishEveryMs: 160 };
+var OPTS_ENTER   = { durationMs: 3500, wishesCount: 14, wishEveryMs: 180 };
+
 document.addEventListener('DOMContentLoaded', function () {
   if (new URLSearchParams(window.location.search).get('reset') === '1') {
     resetAllPlayerData();
@@ -751,11 +785,32 @@ document.addEventListener('DOMContentLoaded', function () {
     window.history.replaceState({}, '', window.location.pathname);
   }
 
-  document.getElementById('btnLetterNext').onclick = function () {
-    launchTetTransition(function () { showScreen('s-pick'); });
+  var btnNext    = document.getElementById('btnLetterNext');
+  var btnPreview = document.getElementById('btnPreviewFireworks');
+
+  // Gate: require at least one fireworks preview before entering
+  var introFwPlayed = localStorage.getItem('introFwPlayed') === '1';
+
+  function unlockEnter() {
+    introFwPlayed = true;
+    localStorage.setItem('introFwPlayed', '1');
+    btnNext.disabled = false;
+    btnNext.textContent = 'Vào sòng';
+  }
+
+  if (!introFwPlayed) {
+    btnNext.disabled = true;
+    btnNext.textContent = 'Bắn pháo hoa trước đã 😎';
+  }
+
+  btnNext.onclick = function () {
+    if (btnNext.disabled) return;
+    launchTetTransition(function () { showScreen('s-pick'); }, OPTS_ENTER);
   };
-  document.getElementById('btnPreviewFireworks').onclick = function () {
-    launchTetTransition(null);
+
+  btnPreview.onclick = function () {
+    launchTetTransition(null, OPTS_PREVIEW);
+    if (!introFwPlayed) unlockEnter();
   };
   renderNameList();
 
