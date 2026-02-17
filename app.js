@@ -252,8 +252,8 @@ function renderGame() {
     table.appendChild(status);
   }
 
-  // --- Reveal line ---
-  if (g.finished) {
+  // --- Reveal line (win only) ---
+  if (g.finished && g.outcome === 'win') {
     var reveal = document.createElement('p');
     reveal.className = 'reveal';
     reveal.textContent = '✨ Ván này là: ' + g.winLabel;
@@ -302,6 +302,7 @@ function startGame() {
     outcomeOnStand: script.outcomeOnStand,
     finished: false,
     outcome: null,
+    playerBusted: false,
     winLabel: script.label,
     winText: script.winText || '',
     loseText: script.loseText || '',
@@ -321,6 +322,7 @@ function hit() {
 
   if (g.bustAt !== null && g.drawIndex >= g.bustAt) {
     g.finished = true;
+    g.playerBusted = true;
     g.outcome = 'lose';
     g.statusText = g.loseText || 'Quắc rồi 😭';
     bumpAttempt(state.playerKey);
@@ -334,6 +336,7 @@ function hit() {
 function stand() {
   var g = state.game;
   if (g.finished) return;
+  if (g.playerBusted) return;
   g.finished = true;
 
   if (g.outcomeOnStand === 'win') {
@@ -343,6 +346,7 @@ function stand() {
     g.animateMode = 'reveal';
     renderGame();
     setTimeout(function () {
+      if (g.playerBusted) return;
       showScreen('s-reward');
     }, 1200);
   } else {
