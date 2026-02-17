@@ -246,12 +246,6 @@ function renderNameList() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  if (DEV && new URLSearchParams(window.location.search).get('reset') === '1') {
-    localStorage.clear();
-    console.log('[dev] localStorage cleared via ?reset=1');
-    window.history.replaceState({}, '', window.location.pathname);
-  }
-
   document.getElementById('btnLetterNext').addEventListener('click', function () {
     showScreen('s-pick');
   });
@@ -268,7 +262,7 @@ document.addEventListener('DOMContentLoaded', function () {
       headers: { 'Accept': 'application/json' }
     }).then(function (response) {
       if (response.ok) {
-        setClaimed(state.playerKey);
+        if (state.playerKey) setClaimed(state.playerKey);
         form.reset();
         showScreen('s-end');
       } else {
