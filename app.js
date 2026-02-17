@@ -611,8 +611,9 @@ var WISH_TEXTS = [
 ];
 
 function launchTetTransition(callback) {
+  var done = typeof callback === 'function' ? callback : function () {};
   if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    callback();
+    done();
     return;
   }
 
@@ -734,7 +735,7 @@ function launchTetTransition(callback) {
       cancelAnimationFrame(rafId);
       overlay.classList.remove('fw-active');
       canvas.width = 0; // free memory
-      callback();
+      done();
     }
   }
 
@@ -750,9 +751,12 @@ document.addEventListener('DOMContentLoaded', function () {
     window.history.replaceState({}, '', window.location.pathname);
   }
 
-  document.getElementById('btnLetterNext').addEventListener('click', function () {
+  document.getElementById('btnLetterNext').onclick = function () {
     launchTetTransition(function () { showScreen('s-pick'); });
-  });
+  };
+  document.getElementById('btnPreviewFireworks').onclick = function () {
+    launchTetTransition(null);
+  };
   renderNameList();
 
   var form = document.getElementById('giftForm');

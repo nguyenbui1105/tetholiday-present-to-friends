@@ -190,6 +190,37 @@ body::after {
   100% { opacity: 0; transform: translateY(-76px) scale(0.94); }
 }
 
+/* ── Letter action buttons ── */
+
+.letter-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.letter-actions button {
+  margin-top: 0;
+  width: 100%;
+  max-width: 280px;
+}
+
+.btn-secondary {
+  font-size: 14px;
+  padding: 9px 18px;
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 215, 0, 0.16);
+  color: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.04);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 215, 0, 0.07);
+  border-color: rgba(255, 215, 0, 0.32);
+  color: #fff;
+}
+
 /* ── Reduced motion ── */
 
 @media (prefers-reduced-motion: reduce) {
