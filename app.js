@@ -35,12 +35,16 @@ function hasPickedEnvelope(playerKey) {
   return localStorage.getItem(pickedKey(playerKey)) !== null;
 }
 
+function claimedKey(playerKey) {
+  return 'claimed_' + playerKey;
+}
+
 function isClaimed(playerKey) {
-  return localStorage.getItem('claimed_' + playerKey) === '1';
+  return localStorage.getItem(claimedKey(playerKey)) === '1';
 }
 
 function setClaimed(playerKey) {
-  localStorage.setItem('claimed_' + playerKey, '1');
+  localStorage.setItem(claimedKey(playerKey), '1');
 }
 
 function showScreen(id) {
@@ -122,75 +126,48 @@ function setupRewardUI() {
     console.warn('[setupRewardUI] missing element:', { closed: !!closed, opened: !!opened, envStage: !!envStage, result: !!result });
     return;
   }
-  if (DEV && new URLSearchParams(window.location.search).get('reset') === '1') {
-    localStorage.removeItem(pickedKey(state.playerKey));
-    console.log('[setupRewardUI] reset envelope pick for', state.playerKey);
-  }
-
   var picked = getPickedEnvIndex(state.playerKey);
   if (DEV) console.log('[setupRewardUI] playerKey:', state.playerKey, 'picked:', picked);
 
-  closed.style.display = 'none';
-  opened.style.display = 'block';
-
   if (picked !== null) {
+    // Already picked — skip teaser, show result directly
+    closed.style.display = 'none';
+    opened.style.display = 'block';
     envStage.style.display = 'none';
     result.style.display = 'block';
-    if (DEV) console.log('[setupRewardUI] already picked, display states:', {
-      rewardClosed: closed.style.display, rewardOpened: opened.style.display,
-      envelopeStage: envStage.style.display, rewardResult: result.style.display
-    });
     renderReward();
-  } else {
-    envStage.style.display = 'block';
-    result.style.display = 'none';
-    state.amount = null;
+    return;
+  }
 
-    if (DEV) {
-      console.log('[setupRewardUI] display states:', {
-        rewardClosed: closed.style.display, rewardOpened: opened.style.display,
-        envelopeStage: envStage.style.display, rewardResult: result.style.display
-      });
-      requestAnimationFrame(function () {
-        var grid = document.getElementById('envelopeGrid');
-        var firstEnv = grid ? grid.querySelector('.envelope') : null;
-        console.log('[assertVisibility] #envelopeGrid rect:', grid ? grid.getBoundingClientRect() : 'NOT FOUND');
-        console.log('[assertVisibility] first .envelope rect:', firstEnv ? firstEnv.getBoundingClientRect() : 'NOT FOUND');
-        ['rewardOpened', 'envelopeStage', 'envelopeGrid'].forEach(function (id) {
-          var el = document.getElementById(id);
-          if (!el) return;
-          var cs = window.getComputedStyle(el);
-          console.log('[assertVisibility] #' + id + ' computed:', {
-            display: cs.display, visibility: cs.visibility, opacity: cs.opacity,
-            height: cs.height, width: cs.width, overflow: cs.overflow
-          });
-        });
-        var node = grid;
-        while (node && node !== document.body) {
-          var s = window.getComputedStyle(node);
-          if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0' || parseInt(s.height) === 0) {
-            console.warn('[assertVisibility] HIDDEN ANCESTOR:', node.id || node.className, {
-              display: s.display, visibility: s.visibility, opacity: s.opacity, height: s.height
-            });
-          }
-          node = node.parentElement;
-        }
-      });
-    }
+  // Not yet picked — show gift teaser, wire up "Mở quà"
+  closed.style.display = 'block';
+  opened.style.display = 'none';
+  envStage.style.display = 'block';
+  result.style.display = 'none';
+  state.amount = null;
 
-    document.querySelectorAll('#envelopeGrid .envelope').forEach(function (envBtn) {
-      var fresh = envBtn.cloneNode(true);
-      envBtn.parentNode.replaceChild(fresh, envBtn);
-      fresh.addEventListener('click', function () {
-        if (getPickedEnvIndex(state.playerKey) !== null) return;
-        var idx = Number(fresh.dataset.env);
-        setPickedEnvIndex(state.playerKey, idx);
-        envStage.style.display = 'none';
-        result.style.display = 'block';
-        renderReward();
-      });
+  var openBtn = document.getElementById('btnOpenReward');
+  if (openBtn) {
+    var freshOpen = openBtn.cloneNode(true);
+    openBtn.parentNode.replaceChild(freshOpen, openBtn);
+    freshOpen.addEventListener('click', function () {
+      closed.style.display = 'none';
+      opened.style.display = 'block';
     });
   }
+
+  document.querySelectorAll('#envelopeGrid .envelope').forEach(function (envBtn) {
+    var fresh = envBtn.cloneNode(true);
+    envBtn.parentNode.replaceChild(fresh, envBtn);
+    fresh.addEventListener('click', function () {
+      if (getPickedEnvIndex(state.playerKey) !== null) return;
+      var idx = Number(fresh.dataset.env);
+      setPickedEnvIndex(state.playerKey, idx);
+      envStage.style.display = 'none';
+      result.style.display = 'block';
+      renderReward();
+    });
+  });
 }
 
 function renderReward() {
@@ -242,9 +219,12 @@ function renderNameList() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-  if (DEV && new URLSearchParams(window.location.search).get('reset') === '1') {
-    localStorage.clear();
-    console.log('[dev] localStorage cleared via ?reset=1');
+  if (new URLSearchParams(window.location.search).get('reset') === '1') {
+    PLAYERS.forEach(function (p) {
+      localStorage.removeItem(pickedKey(p.key));
+      localStorage.removeItem(claimedKey(p.key));
+    });
+    if (DEV) console.log('[reset] cleared all player keys');
     window.history.replaceState({}, '', window.location.pathname);
   }
 
