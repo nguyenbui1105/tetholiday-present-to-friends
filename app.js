@@ -354,6 +354,13 @@ function stand() {
   }
 }
 
+function setRewardState(closed, opened, envStage, result, s) {
+  closed.style.display  = s === 'A' ? 'block' : 'none';
+  opened.style.display  = s === 'A' ? 'none'  : 'block';
+  envStage.style.display = s === 'B' ? 'block' : 'none';
+  result.style.display   = s === 'C' ? 'block' : 'none';
+}
+
 function setupRewardUI() {
   if (!state.playerKey) {
     showScreen('s-pick');
@@ -370,33 +377,28 @@ function setupRewardUI() {
   var picked = getPickedEnvIndex(state.playerKey);
   if (DEV) console.log('[setupRewardUI] playerKey:', state.playerKey, 'picked:', picked);
 
+  // State C: already picked — show result directly
   if (picked !== null) {
-    // Already picked — skip teaser, show result directly
-    closed.style.display = 'none';
-    opened.style.display = 'block';
-    envStage.style.display = 'none';
-    result.style.display = 'block';
+    setRewardState(closed, opened, envStage, result, 'C');
     renderReward();
     return;
   }
 
-  // Not yet picked — show gift teaser, wire up "Mở quà"
-  closed.style.display = 'block';
-  opened.style.display = 'none';
-  envStage.style.display = 'block';
-  result.style.display = 'none';
+  // State A: show gift teaser
+  setRewardState(closed, opened, envStage, result, 'A');
   state.amount = null;
 
+  // Wire "Mở quà" -> State B
   var openBtn = document.getElementById('btnOpenReward');
   if (openBtn) {
     var freshOpen = openBtn.cloneNode(true);
     openBtn.parentNode.replaceChild(freshOpen, openBtn);
     freshOpen.addEventListener('click', function () {
-      closed.style.display = 'none';
-      opened.style.display = 'block';
+      setRewardState(closed, opened, envStage, result, 'B');
     });
   }
 
+  // Wire envelopes -> State C
   document.querySelectorAll('#envelopeGrid .envelope').forEach(function (envBtn) {
     var fresh = envBtn.cloneNode(true);
     envBtn.parentNode.replaceChild(fresh, envBtn);
@@ -404,8 +406,7 @@ function setupRewardUI() {
       if (getPickedEnvIndex(state.playerKey) !== null) return;
       var idx = Number(fresh.dataset.env);
       setPickedEnvIndex(state.playerKey, idx);
-      envStage.style.display = 'none';
-      result.style.display = 'block';
+      setRewardState(closed, opened, envStage, result, 'C');
       renderReward();
     });
   });
