@@ -119,3 +119,26 @@ button:focus-visible {
 #gameArea p {
   margin: 10px 0;
 }
+
+.envelope-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(56px, 1fr));
+  gap: 12px;
+  margin: 16px 0 8px;
+}
+
+.envelope {
+  font-size: 26px;
+  padding: 14px 0;
+  border-radius: 16px;
+}
+
+.envelope:hover {
+  background: rgba(255, 215, 0, 0.12);
+}
+
+@media (max-width: 520px) {
+  .envelope-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}

@@ -8,21 +8,31 @@ var DEMO_SCRIPT = {
   dealerCards: ['9♣', '7♠', '8♦']
 };
 
+var DEV = new URL(location.href).searchParams.has('dev');
+
 var state = {
   playerKey: null,
   playerName: null,
   game: null
 };
 
+function pickedKey(playerKey) {
+  return 'pickedEnvelope_' + playerKey;
+}
+
 function getPickedEnvIndex(playerKey) {
-  var v = localStorage.getItem('pickedEnvelope_' + playerKey);
+  var v = localStorage.getItem(pickedKey(playerKey));
   if (v === null) return null;
   var n = Number(v);
   return Number.isInteger(n) ? n : null;
 }
 
 function setPickedEnvIndex(playerKey, idx) {
-  localStorage.setItem('pickedEnvelope_' + playerKey, String(idx));
+  localStorage.setItem(pickedKey(playerKey), String(idx));
+}
+
+function hasPickedEnvelope(playerKey) {
+  return localStorage.getItem(pickedKey(playerKey)) !== null;
 }
 
 function isClaimed(playerKey) {
@@ -39,7 +49,7 @@ function showScreen(id) {
   });
   document.getElementById(id).classList.add('active');
   if (id === 's-reward') {
-    console.log('[nav] entered reward');
+    if (DEV) console.log('[nav] entered reward');
     setupRewardUI();
   }
 }
@@ -100,47 +110,87 @@ function stand() {
 }
 
 function setupRewardUI() {
-  var btn = document.getElementById('btnOpenReward');
+  if (!state.playerKey) {
+    showScreen('s-pick');
+    return;
+  }
   var closed = document.getElementById('rewardClosed');
   var opened = document.getElementById('rewardOpened');
   var envStage = document.getElementById('envelopeStage');
   var result = document.getElementById('rewardResult');
-  if (!btn || !closed || !opened) return;
-
-  var picked = getPickedEnvIndex(state.playerKey);
-
-  if (picked !== null) {
-    closed.style.display = 'none';
-    opened.style.display = 'block';
-    envStage.style.display = 'none';
-    result.style.display = 'block';
-    renderReward();
+  if (!closed || !opened || !envStage || !result) {
+    console.warn('[setupRewardUI] missing element:', { closed: !!closed, opened: !!opened, envStage: !!envStage, result: !!result });
     return;
   }
+  if (DEV && new URLSearchParams(window.location.search).get('reset') === '1') {
+    localStorage.removeItem(pickedKey(state.playerKey));
+    console.log('[setupRewardUI] reset envelope pick for', state.playerKey);
+  }
 
-  closed.style.display = 'block';
-  opened.style.display = 'none';
-  envStage.style.display = 'block';
-  result.style.display = 'none';
+  var picked = getPickedEnvIndex(state.playerKey);
+  if (DEV) console.log('[setupRewardUI] playerKey:', state.playerKey, 'picked:', picked);
 
-  var newBtn = btn.cloneNode(true);
-  btn.parentNode.replaceChild(newBtn, btn);
-  newBtn.addEventListener('click', function () {
-    console.log('[reward] open clicked', { playerKey: state.playerKey, playerName: state.playerName });
-    closed.style.display = 'none';
-    opened.style.display = 'block';
-  });
+  closed.style.display = 'none';
+  opened.style.display = 'block';
 
-  document.querySelectorAll('#envelopeGrid .envelope').forEach(function (envBtn) {
-    envBtn.addEventListener('click', function () {
-      if (getPickedEnvIndex(state.playerKey) !== null) return;
-      var idx = Number(envBtn.dataset.env);
-      setPickedEnvIndex(state.playerKey, idx);
-      envStage.style.display = 'none';
-      result.style.display = 'block';
-      renderReward();
+  if (picked !== null) {
+    envStage.style.display = 'none';
+    result.style.display = 'block';
+    if (DEV) console.log('[setupRewardUI] already picked, display states:', {
+      rewardClosed: closed.style.display, rewardOpened: opened.style.display,
+      envelopeStage: envStage.style.display, rewardResult: result.style.display
     });
-  });
+    renderReward();
+  } else {
+    envStage.style.display = 'block';
+    result.style.display = 'none';
+    state.amount = null;
+
+    if (DEV) {
+      console.log('[setupRewardUI] display states:', {
+        rewardClosed: closed.style.display, rewardOpened: opened.style.display,
+        envelopeStage: envStage.style.display, rewardResult: result.style.display
+      });
+      requestAnimationFrame(function () {
+        var grid = document.getElementById('envelopeGrid');
+        var firstEnv = grid ? grid.querySelector('.envelope') : null;
+        console.log('[assertVisibility] #envelopeGrid rect:', grid ? grid.getBoundingClientRect() : 'NOT FOUND');
+        console.log('[assertVisibility] first .envelope rect:', firstEnv ? firstEnv.getBoundingClientRect() : 'NOT FOUND');
+        ['rewardOpened', 'envelopeStage', 'envelopeGrid'].forEach(function (id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          var cs = window.getComputedStyle(el);
+          console.log('[assertVisibility] #' + id + ' computed:', {
+            display: cs.display, visibility: cs.visibility, opacity: cs.opacity,
+            height: cs.height, width: cs.width, overflow: cs.overflow
+          });
+        });
+        var node = grid;
+        while (node && node !== document.body) {
+          var s = window.getComputedStyle(node);
+          if (s.display === 'none' || s.visibility === 'hidden' || s.opacity === '0' || parseInt(s.height) === 0) {
+            console.warn('[assertVisibility] HIDDEN ANCESTOR:', node.id || node.className, {
+              display: s.display, visibility: s.visibility, opacity: s.opacity, height: s.height
+            });
+          }
+          node = node.parentElement;
+        }
+      });
+    }
+
+    document.querySelectorAll('#envelopeGrid .envelope').forEach(function (envBtn) {
+      var fresh = envBtn.cloneNode(true);
+      envBtn.parentNode.replaceChild(fresh, envBtn);
+      fresh.addEventListener('click', function () {
+        if (getPickedEnvIndex(state.playerKey) !== null) return;
+        var idx = Number(fresh.dataset.env);
+        setPickedEnvIndex(state.playerKey, idx);
+        envStage.style.display = 'none';
+        result.style.display = 'block';
+        renderReward();
+      });
+    });
+  }
 }
 
 function renderReward() {
@@ -153,9 +203,21 @@ function renderReward() {
 }
 
 function goForm() {
+  if (!state.playerKey) {
+    showScreen('s-pick');
+    return;
+  }
+  if (!hasPickedEnvelope(state.playerKey)) {
+    alert('Bốc 1 bao lì xì trước đã nha 😎');
+    showScreen('s-reward');
+    return;
+  }
+  renderReward();
+  var pn = document.getElementById('playerName');
+  var amt = document.getElementById('amountInput');
+  if (pn) pn.value = state.playerName || '';
+  if (amt) amt.value = String(state.amount || '');
   showScreen('s-form');
-  document.getElementById('playerName').value = state.playerName;
-  document.getElementById('amountInput').value = state.amount;
 }
 
 function renderNameList() {
@@ -180,6 +242,12 @@ function renderNameList() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
+  if (DEV && new URLSearchParams(window.location.search).get('reset') === '1') {
+    localStorage.clear();
+    console.log('[dev] localStorage cleared via ?reset=1');
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+
   document.getElementById('btnLetterNext').addEventListener('click', function () {
     showScreen('s-pick');
   });

@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Chủ Sòng</title>
+  <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
 
@@ -25,17 +26,67 @@
 
   <section id="s-reward" class="screen">
     <h1>Phần thưởng</h1>
+
+    <div id="rewardBox" class="reward-box">
+      <div id="rewardClosed">
+        <p>🎁 Một phần quà từ Chủ Sòng</p>
+        <button type="button" id="btnOpenReward">Mở quà</button>
+      </div>
+
+      <div id="rewardOpened" style="display: none;">
+        <div id="envelopeStage">
+          <p>Chọn 1 bao lì xì (bốc 1 lần thôi nha 😎)</p>
+
+          <div id="envelopeGrid" class="envelope-grid">
+            <button type="button" class="envelope" data-env="0">🧧</button>
+            <button type="button" class="envelope" data-env="1">🧧</button>
+            <button type="button" class="envelope" data-env="2">🧧</button>
+            <button type="button" class="envelope" data-env="3">🧧</button>
+            <button type="button" class="envelope" data-env="4">🧧</button>
+          </div>
+        </div>
+
+        <div id="rewardResult" style="display:none;">
+          <h2 id="amountText"></h2>
+          <p id="wishText"></p>
+          <button type="button" onclick="goForm()">Nhận lì xì</button>
+        </div>
+      </div>
+    </div>
   </section>
 
   <section id="s-form" class="screen">
     <h1>Nhận lì xì</h1>
+    <p>Thông tin chỉ dùng để mình chuyển lì xì.</p>
+
+    <form id="giftForm">
+      <input type="hidden" id="playerName" name="playerName" />
+      <input type="hidden" id="amountInput" name="amount" />
+
+      <label>
+        Ngân hàng
+        <input id="bankInput" name="bank" type="text" placeholder="VD: Vietcombank" required />
+      </label>
+
+      <label>
+        Số tài khoản
+        <input id="accountInput" name="account" type="text" placeholder="VD: 0123456789" inputmode="numeric" required />
+      </label>
+
+      <label>
+        Lời nhắn gửi Nguyên
+        <textarea id="messageInput" name="message" rows="4" placeholder="Viết gì đó dễ thương..." required></textarea>
+      </label>
+
+      <button id="btnSubmitGift" type="submit">Gửi cho Chủ Sòng</button>
+    </form>
   </section>
 
   <section id="s-end" class="screen">
     <h1>Hẹn gặp lại</h1>
   </section>
 
-  <script src="data.js"></script>
-  <script src="app.js"></script>
+  <script src="data.js?v=3"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
