@@ -1,0 +1,28 @@
+.screen {
+  display: none;
+}
+
+.screen.active {
+  display: block;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #111;
+  color: #f5f5f5;
+}
+
+.card {
+  max-width: 600px;
+  margin: 80px auto;
+  padding: 40px;
+  background: #1a1a1a;
+  border-radius: 12px;
+}
+
+button {
+  padding: 10px 18px;
+  margin-top: 20px;
+  cursor: pointer;
+}
