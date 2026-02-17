@@ -125,36 +125,149 @@ function showScreen(id) {
   }
 }
 
+function parseCard(str) {
+  var suit = str.slice(-1);
+  var rank = str.slice(0, -1);
+  return { rank: rank, suit: suit };
+}
+
+function createCardEl(cardStr, isBack, animClass, delay) {
+  var el = document.createElement('div');
+  el.className = 'playing-card';
+
+  if (isBack) {
+    el.classList.add('back');
+  } else {
+    var p = parseCard(cardStr);
+    el.classList.add('face');
+    el.classList.add((p.suit === '♥' || p.suit === '♦') ? 'red' : 'black');
+
+    var rankSpan = document.createElement('span');
+    rankSpan.className = 'rank';
+    rankSpan.textContent = p.rank;
+    el.appendChild(rankSpan);
+
+    var suitSpan = document.createElement('span');
+    suitSpan.className = 'suit';
+    suitSpan.textContent = p.suit;
+    el.appendChild(suitSpan);
+  }
+
+  if (animClass) {
+    el.classList.add(animClass);
+    if (delay) el.style.animationDelay = delay + 'ms';
+  }
+  return el;
+}
+
 function renderGame() {
   var g = state.game;
   var section = document.getElementById('s-game');
-  var playerCardsText = g.playerCards.join('  ');
-  var dealerCardsText = g.dealerCards.map(function (c, i) {
-    if (!g.finished && i === g.dealerCards.length - 1) {
-      return '🂠';
-    }
-    return c;
-  }).join('  ');
+  var mode = g.animateMode || 'none';
+  g.animateMode = 'none';
 
-  var buttons;
-  if (g.finished && g.outcome === 'lose') {
-    buttons = '<button type="button" onclick="startGame()">Chơi lại</button>';
-  } else if (g.finished) {
-    buttons = '';
-  } else {
-    buttons = '<button type="button" onclick="hit()">Hit</button> ' +
-      '<button type="button" onclick="stand()">Stand</button>';
+  section.innerHTML = '';
+
+  var table = document.createElement('div');
+  table.className = 'table';
+
+  var h1 = document.createElement('h1');
+  h1.textContent = state.playerName;
+  table.appendChild(h1);
+
+  // --- Dealer hand ---
+  var dealerBlock = document.createElement('div');
+  dealerBlock.className = 'hand-block';
+  var dealerTitle = document.createElement('div');
+  dealerTitle.className = 'hand-title';
+  dealerTitle.textContent = 'Dealer';
+  dealerBlock.appendChild(dealerTitle);
+
+  var dealerHand = document.createElement('div');
+  dealerHand.className = 'hand';
+  g.dealerCards.forEach(function (c, i) {
+    var isLast = (i === g.dealerCards.length - 1);
+    var isBack = !g.finished && isLast;
+    var anim = null;
+    var delay = 0;
+
+    if (mode === 'deal') {
+      anim = 'deal-in';
+      delay = i * 80;
+    } else if (mode === 'reveal' && isLast) {
+      anim = 'flip-in';
+    }
+    dealerHand.appendChild(createCardEl(c, isBack, anim, delay));
+  });
+  dealerBlock.appendChild(dealerHand);
+  table.appendChild(dealerBlock);
+
+  // --- Player hand ---
+  var playerBlock = document.createElement('div');
+  playerBlock.className = 'hand-block';
+  var playerTitle = document.createElement('div');
+  playerTitle.className = 'hand-title';
+  playerTitle.textContent = 'Bạn';
+  playerBlock.appendChild(playerTitle);
+
+  var playerHand = document.createElement('div');
+  playerHand.className = 'hand';
+  var staggerBase = g.dealerCards.length;
+  g.playerCards.forEach(function (c, i) {
+    var anim = null;
+    var delay = 0;
+
+    if (mode === 'deal') {
+      anim = 'deal-in';
+      delay = (staggerBase + i) * 80;
+    } else if (mode === 'hit' && i === g.playerCards.length - 1) {
+      anim = 'deal-in';
+    }
+    playerHand.appendChild(createCardEl(c, false, anim, delay));
+  });
+  playerBlock.appendChild(playerHand);
+  table.appendChild(playerBlock);
+
+  // --- Status ---
+  var status = document.createElement('p');
+  status.id = 'gameStatus';
+  status.textContent = g.statusText;
+  table.appendChild(status);
+
+  // --- Reveal line ---
+  if (g.finished) {
+    var reveal = document.createElement('p');
+    reveal.className = 'reveal';
+    reveal.textContent = '✨ Ván này là: ' + g.winLabel;
+    table.appendChild(reveal);
   }
 
-  var revealLine = g.finished ? '<p class="reveal">✨ Ván này là: ' + g.winLabel + '</p>' : '';
+  // --- Buttons ---
+  var btnRow = document.createElement('div');
+  btnRow.className = 'btn-row';
 
-  section.innerHTML =
-    '<h1>' + state.playerName + '</h1>' +
-    '<p>Your cards: ' + playerCardsText + '</p>' +
-    '<p>Dealer cards: ' + dealerCardsText + '</p>' +
-    '<p id="gameStatus">' + g.statusText + '</p>' +
-    revealLine +
-    buttons;
+  if (g.finished && g.outcome === 'lose') {
+    var retryBtn = document.createElement('button');
+    retryBtn.type = 'button';
+    retryBtn.textContent = 'Chơi lại';
+    retryBtn.addEventListener('click', startGame);
+    btnRow.appendChild(retryBtn);
+  } else if (!g.finished) {
+    var hitBtn = document.createElement('button');
+    hitBtn.type = 'button';
+    hitBtn.textContent = 'Hit';
+    hitBtn.addEventListener('click', hit);
+    btnRow.appendChild(hitBtn);
+
+    var standBtn = document.createElement('button');
+    standBtn.type = 'button';
+    standBtn.textContent = 'Stand';
+    standBtn.addEventListener('click', stand);
+    btnRow.appendChild(standBtn);
+  }
+  table.appendChild(btnRow);
+
+  section.appendChild(table);
 }
 
 function startGame() {
@@ -172,7 +285,8 @@ function startGame() {
     winLabel: script.label,
     winText: script.winText || '',
     loseText: script.loseText || '',
-    statusText: 'Hit or Stand?'
+    statusText: 'Hit or Stand?',
+    animateMode: 'deal'
   };
   renderGame();
 }
@@ -186,6 +300,7 @@ function hit() {
     if (g.hitIndex >= g.playerHit.length) {
       g.statusText = 'Hết bài rồi. Stand để chốt.';
     }
+    g.animateMode = 'hit';
     renderGame();
   }
 }
@@ -198,13 +313,15 @@ function stand() {
   if (g.outcome === 'win') {
     g.statusText = g.winText;
     resetAttempt(state.playerKey);
+    g.animateMode = 'reveal';
     renderGame();
     setTimeout(function () {
       showScreen('s-reward');
-    }, 700);
+    }, 1400);
   } else {
     g.statusText = g.loseText;
     bumpAttempt(state.playerKey);
+    g.animateMode = 'reveal';
     renderGame();
   }
 }

@@ -116,8 +116,168 @@ button:focus-visible {
   margin-top: 18px;
 }
 
-#gameArea p {
-  margin: 10px 0;
+/* --- Card table layout --- */
+
+.table {
+  width: 100%;
+  max-width: 480px;
+  text-align: center;
+}
+
+.hand-block {
+  margin: 20px 0;
+}
+
+.hand-title {
+  font-size: 11px;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.4;
+  margin-bottom: 10px;
+}
+
+.hand {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-height: 96px;
+}
+
+/* --- Playing cards --- */
+
+.playing-card {
+  width: 64px;
+  height: 92px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.playing-card.face {
+  background: linear-gradient(160deg, #fffef7, #f0ead6);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.playing-card.face .rank {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  font-family: Georgia, 'Times New Roman', serif;
+}
+
+.playing-card.face .suit {
+  font-size: 26px;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.playing-card.face.red {
+  color: #c0392b;
+}
+
+.playing-card.face.black {
+  color: #1a1a1a;
+}
+
+.playing-card.back {
+  background: linear-gradient(145deg, #7a1010 0%, #a52020 40%, #7a1010 100%);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  box-shadow:
+    0 2px 6px rgba(0, 0, 0, 0.35),
+    inset 0 0 12px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.playing-card.back::before {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1.5px solid rgba(255, 215, 0, 0.15);
+  border-radius: 4px;
+}
+
+.playing-card.back::after {
+  content: '♠';
+  font-size: 20px;
+  color: rgba(255, 215, 0, 0.12);
+}
+
+/* --- Card animations --- */
+
+@keyframes deal-in {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.88);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.deal-in {
+  animation: deal-in 340ms cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes flip-in {
+  0% {
+    transform: scaleX(0);
+  }
+  50% {
+    transform: scaleX(0);
+  }
+  100% {
+    transform: scaleX(1);
+  }
+}
+
+.flip-in {
+  animation: flip-in 420ms ease-out both;
+}
+
+/* --- Button row --- */
+
+.btn-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.btn-row button {
+  margin-top: 0;
+}
+
+/* --- Reveal line --- */
+
+.reveal {
+  font-size: 15px;
+  opacity: 0.75;
+  font-style: italic;
+}
+
+/* --- Responsive cards --- */
+
+@media (max-width: 380px) {
+  .playing-card {
+    width: 54px;
+    height: 78px;
+  }
+  .playing-card.face .rank {
+    font-size: 17px;
+  }
+  .playing-card.face .suit {
+    font-size: 22px;
+  }
 }
 
 .envelope-grid {
