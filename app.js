@@ -6,9 +6,9 @@ var GAME_SCRIPTS = {
   han_bui: [
     { label: 'Ngũ linh may mắn',
       playerStart: ['A♠', '2♦'],
-      drawSeq: ['3♥', 'A♣', '4♠', '5♦', '2♣'],
+      drawSeq: ['3♥', 'A♣', '4♠'],
       dealerCards: ['10♣', '7♠', '6♦'],
-      bustAt: null, outcomeOnStand: 'win',
+      bustAt: null, outcomeOnStand: 'win', autoWinAt: 5,
       winText: 'Ngũ linh! 5 lá không quắc. Bạn thắng 😎', loseText: '' }
   ],
   boi: [
@@ -299,6 +299,7 @@ function startGame() {
     drawSeq: script.drawSeq.slice(),
     drawIndex: 0,
     bustAt: script.bustAt,
+    autoWinAt: script.autoWinAt || null,
     outcomeOnStand: script.outcomeOnStand,
     finished: false,
     outcome: null,
@@ -327,9 +328,25 @@ function hit() {
     g.statusText = g.loseText || 'Quắc rồi 😭';
     bumpAttempt(state.playerKey);
     g.animateMode = 'bust';
-  } else {
-    g.animateMode = 'hit';
+    renderGame();
+    return;
   }
+
+  if (g.autoWinAt !== null && g.playerCards.length >= g.autoWinAt) {
+    g.finished = true;
+    g.outcome = 'win';
+    g.statusText = g.winText;
+    resetAttempt(state.playerKey);
+    g.animateMode = 'hit';
+    renderGame();
+    setTimeout(function () {
+      if (g.playerBusted) return;
+      showScreen('s-reward');
+    }, 1200);
+    return;
+  }
+
+  g.animateMode = 'hit';
   renderGame();
 }
 
