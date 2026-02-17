@@ -586,3 +586,68 @@ button:focus-visible {
     grid-template-columns: repeat(3, 1fr);
   }
 }
+
+/* ── How-to-play modal ── */
+
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.72);
+  place-items: center;
+  z-index: 10000;
+}
+
+.modal-overlay.active {
+  display: grid;
+}
+
+.modal-card {
+  width: min(560px, calc(100vw - 32px));
+  padding: 32px 36px;
+  background: rgba(14, 6, 6, 0.88);
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  border-radius: 18px;
+  box-shadow:
+    0 24px 64px rgba(0, 0, 0, 0.70),
+    0 0 0 1px rgba(255, 215, 0, 0.06),
+    inset 0 1px 0 rgba(255, 215, 0, 0.07);
+  backdrop-filter: blur(12px);
+  text-align: center;
+}
+
+.modal-card h2 {
+  font-size: clamp(22px, 3vw, 28px);
+  color: rgba(255, 215, 0, 0.92);
+  margin: 0 0 20px;
+}
+
+.modal-card ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+
+.modal-card ul li {
+  font-size: 16px;
+  line-height: 1.6;
+  opacity: 0.92;
+  padding-left: 1.2em;
+  position: relative;
+}
+
+.modal-card ul li::before {
+  content: '▸';
+  position: absolute;
+  left: 0;
+  color: rgba(255, 215, 0, 0.65);
+}
+
+.modal-card button {
+  margin-top: 0;
+  min-width: 140px;
+}

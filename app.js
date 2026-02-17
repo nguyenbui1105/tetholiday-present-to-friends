@@ -574,6 +574,27 @@ function goForm() {
   showScreen('s-form');
 }
 
+/* ── How-to-play modal ── */
+
+var _howtoCallback = null;
+
+function showHowto(onClose) {
+  _howtoCallback = typeof onClose === 'function' ? onClose : null;
+  var overlay = document.getElementById('howtoOverlay');
+  overlay.classList.add('active');
+  overlay.setAttribute('aria-hidden', 'false');
+  document.getElementById('btnHowtoClose').focus();
+}
+
+function hideHowto() {
+  var overlay = document.getElementById('howtoOverlay');
+  overlay.classList.remove('active');
+  overlay.setAttribute('aria-hidden', 'true');
+  var cb = _howtoCallback;
+  _howtoCallback = null;
+  if (cb) cb();
+}
+
 function renderNameList() {
   var container = document.getElementById('nameList');
   container.innerHTML = '';
@@ -588,8 +609,10 @@ function renderNameList() {
         showScreen('s-end');
         return;
       }
-      showScreen('s-game');
-      startGame();
+      showHowto(function () {
+        showScreen('s-game');
+        startGame();
+      });
     });
     container.appendChild(btn);
   });
@@ -824,7 +847,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   btnNext.onclick = function () {
     if (btnNext.disabled) return;
-    launchTetTransition(function () { showScreen('s-pick'); }, OPTS_ENTER);
+    showScreen('s-pick');
   };
 
   btnPreview.onclick = function () {
@@ -832,6 +855,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!introFwPlayed) unlockEnter();
   };
   renderNameList();
+
+  document.getElementById('btnHowtoClose').onclick = hideHowto;
 
   var form = document.getElementById('giftForm');
   form.addEventListener('submit', function (e) {
