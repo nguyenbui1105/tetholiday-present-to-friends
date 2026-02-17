@@ -180,7 +180,7 @@ function renderGame() {
   dealerBlock.className = 'hand-block';
   var dealerTitle = document.createElement('div');
   dealerTitle.className = 'hand-title';
-  dealerTitle.textContent = 'Dealer';
+  dealerTitle.textContent = 'CHỦ SÒNG';
   dealerBlock.appendChild(dealerTitle);
 
   var dealerHand = document.createElement('div');
@@ -207,7 +207,7 @@ function renderGame() {
   playerBlock.className = 'hand-block';
   var playerTitle = document.createElement('div');
   playerTitle.className = 'hand-title';
-  playerTitle.textContent = 'Bạn';
+  playerTitle.textContent = 'BẠN: ' + state.playerName;
   playerBlock.appendChild(playerTitle);
 
   var playerHand = document.createElement('div');
@@ -255,13 +255,13 @@ function renderGame() {
   } else if (!g.finished) {
     var hitBtn = document.createElement('button');
     hitBtn.type = 'button';
-    hitBtn.textContent = 'Hit';
+    hitBtn.textContent = 'Bốc';
     hitBtn.addEventListener('click', hit);
     btnRow.appendChild(hitBtn);
 
     var standBtn = document.createElement('button');
     standBtn.type = 'button';
-    standBtn.textContent = 'Stand';
+    standBtn.textContent = 'Thôi';
     standBtn.addEventListener('click', stand);
     btnRow.appendChild(standBtn);
   }
