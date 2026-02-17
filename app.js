@@ -245,19 +245,55 @@ function renderNameList() {
   });
 
   if (DEV) {
-    var resetBtn = document.createElement('button');
-    resetBtn.type = 'button';
-    resetBtn.textContent = 'Reset (DEV)';
-    resetBtn.style.cssText = 'opacity:0.5;font-size:12px;margin-top:12px;';
-    resetBtn.addEventListener('click', function () {
+    var devWrap = document.createElement('div');
+    devWrap.style.cssText = 'margin-top:16px;display:flex;gap:8px;align-items:center;';
+    var devStyle = 'opacity:0.5;font-size:12px;padding:6px 12px;';
+    var msgEl = document.createElement('span');
+    msgEl.style.cssText = 'font-size:12px;opacity:0.7;transition:opacity 300ms;';
+
+    function showMsg(text) {
+      msgEl.textContent = text;
+      msgEl.style.opacity = '1';
+      setTimeout(function () { msgEl.style.opacity = '0'; }, 1500);
+    }
+
+    var resetOneBtn = document.createElement('button');
+    resetOneBtn.type = 'button';
+    resetOneBtn.textContent = 'Reset Player';
+    resetOneBtn.style.cssText = devStyle;
+    var lastClickOne = 0;
+    resetOneBtn.addEventListener('click', function () {
+      if (!state.playerKey) { showMsg('Select a name first'); return; }
+      var now = Date.now();
+      if (now - lastClickOne > 2000) { lastClickOne = now; showMsg('Click again to confirm'); return; }
+      lastClickOne = 0;
+      localStorage.removeItem(claimedKey(state.playerKey));
+      localStorage.removeItem(pickedKey(state.playerKey));
+      console.debug('[dev] reset', state.playerKey);
+      showMsg('Reset: ' + state.playerKey);
+    });
+
+    var resetAllBtn = document.createElement('button');
+    resetAllBtn.type = 'button';
+    resetAllBtn.textContent = 'Reset All';
+    resetAllBtn.style.cssText = devStyle;
+    var lastClickAll = 0;
+    resetAllBtn.addEventListener('click', function () {
+      var now = Date.now();
+      if (now - lastClickAll > 2000) { lastClickAll = now; showMsg('Click again to confirm'); return; }
+      lastClickAll = 0;
       PLAYERS.forEach(function (p) {
         localStorage.removeItem(claimedKey(p.key));
         localStorage.removeItem(pickedKey(p.key));
       });
       console.debug('[dev] reset all players');
-      alert('All players reset.');
+      showMsg('All reset');
     });
-    container.parentNode.appendChild(resetBtn);
+
+    devWrap.appendChild(resetOneBtn);
+    devWrap.appendChild(resetAllBtn);
+    devWrap.appendChild(msgEl);
+    container.parentNode.appendChild(devWrap);
   }
 }
 
