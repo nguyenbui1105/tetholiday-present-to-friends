@@ -4,50 +4,66 @@ var ENVELOPES = [68000, 99000, 128000, 188000, 159000];
 
 var GAME_SCRIPTS = {
   han_bui: [
-    { label: 'Ngũ linh may mắn', outcome: 'win',
-      playerStart: ['A♠', '2♦'], playerHit: ['3♥', 'A♣', '4♠'],
+    { label: 'Ngũ linh may mắn',
+      playerStart: ['A♠', '2♦'],
+      drawSeq: ['3♥', 'A♣', '4♠', '5♦', '2♣'],
       dealerCards: ['10♣', '7♠', '6♦'],
-      winText: 'Ngũ linh! 5 lá không quắc. Bạn thắng 😎' }
+      bustAt: null, outcomeOnStand: 'win',
+      winText: 'Ngũ linh! 5 lá không quắc. Bạn thắng 😎', loseText: '' }
   ],
   boi: [
-    { label: 'Dealer quắc', outcome: 'win',
-      playerStart: ['10♠', '8♦'], playerHit: [],
+    { label: 'Dealer quắc',
+      playerStart: ['10♠', '8♦'],
+      drawSeq: ['3♥', '4♣', '2♠', '5♦', 'A♣'],
       dealerCards: ['9♣', '7♠', '8♦'],
-      winText: 'Dealer quắc. Bạn thắng 😎' }
+      bustAt: null, outcomeOnStand: 'win',
+      winText: 'Dealer quắc. Bạn thắng 😎', loseText: '' }
   ],
   ngan: [
-    { label: 'Xui nhẹ đầu năm', outcome: 'lose',
-      playerStart: ['10♠', '6♦'], playerHit: ['9♥'],
+    { label: 'Xui nhẹ đầu năm',
+      playerStart: ['10♠', '6♦'],
+      drawSeq: ['4♥', '9♥', '3♣', 'K♠', '7♦'],
       dealerCards: ['10♣', '9♠'],
-      loseText: 'Quắc rồi 😭 Chơi lại nha!' },
-    { label: 'Lật kèo phút chót', outcome: 'win',
-      playerStart: ['5♠', '6♦'], playerHit: ['10♥'],
+      bustAt: 2, outcomeOnStand: 'lose',
+      winText: '', loseText: 'Quắc rồi 😭 Chơi lại nha!' },
+    { label: 'Lật kèo phút chót',
+      playerStart: ['5♠', '6♦'],
+      drawSeq: ['10♥', '3♣', '2♠', '4♦', 'A♥'],
       dealerCards: ['10♣', '7♠', '8♦'],
-      winText: 'Lật kèo! Dealer quắc. Bạn thắng 😎' }
+      bustAt: null, outcomeOnStand: 'win',
+      winText: 'Lật kèo! Dealer quắc. Bạn thắng 😎', loseText: '' }
   ],
   diep: [
-    { label: 'Thử vận may', outcome: 'lose',
-      playerStart: ['8♠', '7♦'], playerHit: ['K♥'],
+    { label: 'Thử vận may',
+      playerStart: ['8♠', '7♦'],
+      drawSeq: ['5♥', 'K♥', '3♣', '9♠', '2♦'],
       dealerCards: ['10♣', '10♠'],
-      loseText: 'Quắc nhẹ 😅 Thử lại nha!' },
-    { label: '21 tự nhiên', outcome: 'win',
-      playerStart: ['A♠', 'K♦'], playerHit: [],
+      bustAt: 2, outcomeOnStand: 'lose',
+      winText: '', loseText: 'Quắc nhẹ 😅 Thử lại nha!' },
+    { label: '21 tự nhiên',
+      playerStart: ['A♠', 'K♦'],
+      drawSeq: ['2♥', '3♣', '4♠', '5♦', '6♣'],
       dealerCards: ['9♣', '8♠'],
-      winText: 'Xì dách! 21 tự nhiên. Bạn thắng 😎' }
+      bustAt: null, outcomeOnStand: 'win',
+      winText: 'Xì dách! 21 tự nhiên. Bạn thắng 😎', loseText: '' }
   ],
   ngoc: [
-    { label: 'Đánh đâu thắng đó', outcome: 'win',
-      playerStart: ['10♠', '9♦'], playerHit: ['A♥'],
+    { label: 'Đánh đâu thắng đó',
+      playerStart: ['10♠', '9♦'],
+      drawSeq: ['A♥', '2♣', '3♠', '4♦', '5♥'],
       dealerCards: ['10♣', '6♠', '9♦'],
-      winText: '20 điểm! Dealer quắc. Bạn thắng 😎' }
+      bustAt: null, outcomeOnStand: 'win',
+      winText: '20 điểm! Dealer quắc. Bạn thắng 😎', loseText: '' }
   ]
 };
 
 var FALLBACK_SCRIPT = {
-  label: 'Ván may mắn', outcome: 'win',
-  playerStart: ['10♠', '6♦'], playerHit: ['5♥'],
+  label: 'Ván may mắn',
+  playerStart: ['10♠', '6♦'],
+  drawSeq: ['5♥', '3♣', '2♠', '4♦', 'A♣'],
   dealerCards: ['9♣', '7♠', '8♦'],
-  winText: 'Dealer quắc. Bạn thắng 😎'
+  bustAt: null, outcomeOnStand: 'win',
+  winText: 'Dealer quắc. Bạn thắng 😎', loseText: ''
 };
 
 var DEV = new URL(location.href).searchParams.has('dev');
@@ -194,7 +210,7 @@ function renderGame() {
     if (mode === 'deal') {
       anim = 'deal-in';
       delay = i * 80;
-    } else if (mode === 'reveal' && isLast) {
+    } else if ((mode === 'reveal' || mode === 'bust') && isLast) {
       anim = 'flip-in';
     }
     dealerHand.appendChild(createCardEl(c, isBack, anim, delay));
@@ -220,7 +236,7 @@ function renderGame() {
     if (mode === 'deal') {
       anim = 'deal-in';
       delay = (staggerBase + i) * 80;
-    } else if (mode === 'hit' && i === g.playerCards.length - 1) {
+    } else if ((mode === 'hit' || mode === 'bust') && i === g.playerCards.length - 1) {
       anim = 'deal-in';
     }
     playerHand.appendChild(createCardEl(c, false, anim, delay));
@@ -255,15 +271,10 @@ function renderGame() {
     retryBtn.addEventListener('click', startGame);
     btnRow.appendChild(retryBtn);
   } else if (!g.finished) {
-    var hasMoreHits = g.hitIndex < g.playerHit.length;
     var hitBtn = document.createElement('button');
     hitBtn.type = 'button';
     hitBtn.textContent = 'Bốc';
-    if (hasMoreHits) {
-      hitBtn.addEventListener('click', hit);
-    } else {
-      hitBtn.disabled = true;
-    }
+    hitBtn.addEventListener('click', hit);
     btnRow.appendChild(hitBtn);
 
     var standBtn = document.createElement('button');
@@ -285,10 +296,12 @@ function startGame() {
   state.game = {
     playerCards: script.playerStart.slice(),
     dealerCards: script.dealerCards.slice(),
-    playerHit: script.playerHit.slice(),
-    hitIndex: 0,
+    drawSeq: script.drawSeq.slice(),
+    drawIndex: 0,
+    bustAt: script.bustAt,
+    outcomeOnStand: script.outcomeOnStand,
     finished: false,
-    outcome: script.outcome,
+    outcome: null,
     winLabel: script.label,
     winText: script.winText || '',
     loseText: script.loseText || '',
@@ -301,15 +314,21 @@ function startGame() {
 function hit() {
   var g = state.game;
   if (g.finished) return;
-  if (g.hitIndex < g.playerHit.length) {
-    g.playerCards.push(g.playerHit[g.hitIndex]);
-    g.hitIndex++;
-    if (g.hitIndex >= g.playerHit.length) {
-      g.statusText = '';
-    }
+  if (g.drawIndex >= g.drawSeq.length) return;
+
+  g.playerCards.push(g.drawSeq[g.drawIndex]);
+  g.drawIndex++;
+
+  if (g.bustAt !== null && g.drawIndex >= g.bustAt) {
+    g.finished = true;
+    g.outcome = 'lose';
+    g.statusText = g.loseText || 'Quắc rồi 😭';
+    bumpAttempt(state.playerKey);
+    g.animateMode = 'bust';
+  } else {
     g.animateMode = 'hit';
-    renderGame();
   }
+  renderGame();
 }
 
 function stand() {
@@ -317,16 +336,18 @@ function stand() {
   if (g.finished) return;
   g.finished = true;
 
-  if (g.outcome === 'win') {
+  if (g.outcomeOnStand === 'win') {
+    g.outcome = 'win';
     g.statusText = g.winText;
     resetAttempt(state.playerKey);
     g.animateMode = 'reveal';
     renderGame();
     setTimeout(function () {
       showScreen('s-reward');
-    }, 1400);
+    }, 1200);
   } else {
-    g.statusText = g.loseText;
+    g.outcome = 'lose';
+    g.statusText = g.loseText || 'Thua rồi 😭';
     bumpAttempt(state.playerKey);
     g.animateMode = 'reveal';
     renderGame();
