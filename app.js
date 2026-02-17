@@ -1,3 +1,5 @@
+var FORMSPREE_ENDPOINT = 'https://formspree.io/f/REPLACE_ME';
+
 var DEMO_SCRIPT = {
   playerStart: ['10♠', '6♦'],
   playerHit: ['5♥'],
@@ -100,4 +102,26 @@ document.addEventListener('DOMContentLoaded', function () {
     showScreen('s-pick');
   });
   renderNameList();
+
+  var form = document.getElementById('giftForm');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+    fetch(FORMSPREE_ENDPOINT, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'Accept': 'application/json' }
+    }).then(function (response) {
+      if (response.ok) {
+        showScreen('s-end');
+      } else {
+        alert('Gửi chưa thành công, thử lại giúp mình nhé.');
+      }
+    }).catch(function () {
+      alert('Gửi chưa thành công, thử lại giúp mình nhé.');
+    }).finally(function () {
+      submitBtn.disabled = false;
+    });
+  });
 });
