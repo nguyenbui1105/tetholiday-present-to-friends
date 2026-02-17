@@ -20,6 +20,10 @@ function pickedKey(playerKey) {
   return 'pickedEnvelope_' + playerKey;
 }
 
+function claimedKey(playerKey) {
+  return 'claimed_' + playerKey;
+}
+
 function getPickedEnvIndex(playerKey) {
   var v = localStorage.getItem(pickedKey(playerKey));
   if (v === null) return null;
@@ -36,11 +40,11 @@ function hasPickedEnvelope(playerKey) {
 }
 
 function isClaimed(playerKey) {
-  return localStorage.getItem('claimed_' + playerKey) === '1';
+  return localStorage.getItem(claimedKey(playerKey)) === '1';
 }
 
 function setClaimed(playerKey) {
-  localStorage.setItem('claimed_' + playerKey, '1');
+  localStorage.setItem(claimedKey(playerKey), '1');
 }
 
 function showScreen(id) {
@@ -122,11 +126,6 @@ function setupRewardUI() {
     console.warn('[setupRewardUI] missing element:', { closed: !!closed, opened: !!opened, envStage: !!envStage, result: !!result });
     return;
   }
-  if (DEV && new URLSearchParams(window.location.search).get('reset') === '1') {
-    localStorage.removeItem(pickedKey(state.playerKey));
-    console.log('[setupRewardUI] reset envelope pick for', state.playerKey);
-  }
-
   var picked = getPickedEnvIndex(state.playerKey);
   if (DEV) console.log('[setupRewardUI] playerKey:', state.playerKey, 'picked:', picked);
 
@@ -230,6 +229,11 @@ function renderNameList() {
     btn.addEventListener('click', function () {
       state.playerKey = player.key;
       state.playerName = player.name;
+      if (DEV && new URLSearchParams(window.location.search).get('reset') === '1') {
+        localStorage.removeItem(claimedKey(state.playerKey));
+        localStorage.removeItem(pickedKey(state.playerKey));
+        console.debug('[dev] reset claimed + envelope for', state.playerKey);
+      }
       if (isClaimed(state.playerKey)) {
         showScreen('s-end');
         return;
