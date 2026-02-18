@@ -673,6 +673,52 @@ button:focus-visible {
   }
 }
 
+/* ── Sticker bar avatar images ── */
+
+.sticker img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 215, 0, 0.35);
+  margin-bottom: 8px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: avatar-breathe 3.5s ease-in-out infinite;
+}
+
+@keyframes avatar-breathe {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.04); }
+}
+
+.sticker:hover img {
+  transform: translateY(-6px) scale(1.08);
+  box-shadow: 0 0 18px rgba(255, 215, 0, 0.6);
+  animation: none; /* stop breathe while hovering */
+}
+
+.sticker:active img {
+  animation: avatar-bounce 0.4s ease forwards;
+}
+
+@keyframes avatar-bounce {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(0.92); }
+  60%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 480px) {
+  .sticker img {
+    width: 52px;
+    height: 52px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticker img { animation: none !important; }
+}
+
 /* ───────────────────────────── */
 /* Mobile hardening (friends use phone) */
 /* ───────────────────────────── */
