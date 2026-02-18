@@ -1,4 +1,5 @@
 var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgolypwz';
+var APP_VERSION = '20260217b';
 
 function formatVND(amount) {
   return amount.toLocaleString('vi-VN') + ' VND';
@@ -1061,13 +1062,30 @@ document.addEventListener('DOMContentLoaded', function () {
   var form = document.getElementById('giftForm');
   form.addEventListener('submit', function (e) {
     e.preventDefault();
-    var wishesInput = document.getElementById('wishesJsonInput');
-    if (wishesInput) wishesInput.value = JSON.stringify(getWishes(state.playerKey));
     var submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
+
+    // Build normalised wishes object (all 6 keys present)
+    var ALL_KEYS = ['nguyen', 'han_bui', 'boi', 'ngan', 'diep', 'ngoc'];
+    var savedWishes = getWishes(state.playerKey);
+    var wishesObj = {};
+    ALL_KEYS.forEach(function (k) { wishesObj[k] = savedWishes[k] || ''; });
+
+    // Assemble exact payload
+    var fd = new FormData();
+    fd.set('player_key',        state.playerKey  || '');
+    fd.set('player_name',       state.playerName || '');
+    fd.set('timestamp',         new Date().toISOString());
+    fd.set('version',           APP_VERSION);
+    fd.set('amount',            String(state.amount || ''));
+    fd.set('bank',              (document.getElementById('bankInput')    || {}).value || '');
+    fd.set('account',           (document.getElementById('accountInput') || {}).value || '');
+    fd.set('message_to_nguyen', (document.getElementById('messageInput') || {}).value || '');
+    fd.set('wishes_json',       JSON.stringify(wishesObj));
+
     fetch(FORMSPREE_ENDPOINT, {
       method: 'POST',
-      body: new FormData(form),
+      body: fd,
       headers: { 'Accept': 'application/json' }
     }).then(function (response) {
       if (response.ok) {
