@@ -1,5 +1,20 @@
-var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgolypwz';
-var APP_VERSION = '20260217b';
+var SHEETS_ENDPOINT = 'REPLACE_WITH_WEBAPP_EXEC_URL';
+var SHEETS_API_KEY  = 'API_KEY_VALUE';
+var APP_VERSION     = '20260217b';
+
+async function submitToSheets(payload) {
+  var response = await fetch(SHEETS_ENDPOINT, {
+    method:  'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-API-Key':    SHEETS_API_KEY
+    },
+    body: JSON.stringify(payload)
+  });
+  var json = await response.json();
+  if (!json.ok) throw new Error(json.error || 'server error');
+  return true;
+}
 
 function formatVND(amount) {
   return amount.toLocaleString('vi-VN') + ' VND';
@@ -1071,30 +1086,30 @@ document.addEventListener('DOMContentLoaded', function () {
     var wishesObj = {};
     ALL_KEYS.forEach(function (k) { wishesObj[k] = savedWishes[k] || ''; });
 
-    // Assemble exact payload
-    var fd = new FormData();
-    fd.set('player_key',        state.playerKey  || '');
-    fd.set('player_name',       state.playerName || '');
-    fd.set('timestamp',         new Date().toISOString());
-    fd.set('version',           APP_VERSION);
-    fd.set('amount',            String(state.amount || ''));
-    fd.set('bank',              (document.getElementById('bankInput')    || {}).value || '');
-    fd.set('account',           (document.getElementById('accountInput') || {}).value || '');
-    fd.set('message_to_nguyen', (document.getElementById('messageInput') || {}).value || '');
-    fd.set('wishes_json',       JSON.stringify(wishesObj));
+    // Find the reward for amount_label
+    var rewardOrder  = getOrCreateRewardOrder(state.playerKey);
+    var pickedIdx    = getPickedEnvIndex(state.playerKey);
+    var reward       = LUCKY_REWARDS[rewardOrder[pickedIdx]] || {};
 
-    fetch(FORMSPREE_ENDPOINT, {
-      method: 'POST',
-      body: fd,
-      headers: { 'Accept': 'application/json' }
-    }).then(function (response) {
-      if (response.ok) {
-        setClaimed(state.playerKey);
-        form.reset();
-        showScreen('s-end');
-      } else {
-        alert('Gửi chưa thành công, thử lại giúp mình nhé.');
-      }
+    // Assemble exact payload
+    var payload = {
+      timestamp:         new Date().toISOString(),
+      version:           APP_VERSION,
+      player_key:        state.playerKey  || '',
+      player_name:       state.playerName || '',
+      amount:            state.amount     || 0,
+      amount_label:      reward.title     || '',
+      bank_account:      ((document.getElementById('bankInput')    || {}).value || '') +
+                         ' / ' +
+                         ((document.getElementById('accountInput') || {}).value || ''),
+      message_to_nguyen: (document.getElementById('messageInput')  || {}).value || '',
+      wishes_json:       JSON.stringify(wishesObj)
+    };
+
+    submitToSheets(payload).then(function () {
+      setClaimed(state.playerKey);
+      form.reset();
+      showScreen('s-end');
     }).catch(function () {
       alert('Gửi chưa thành công, thử lại giúp mình nhé.');
     }).finally(function () {
