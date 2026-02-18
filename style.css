@@ -1031,3 +1031,107 @@ button:focus-visible {
     min-width: 0;
   }
 }
+
+/* ===== Form screen (Nhận lì xì) ===== */
+.form-card {
+  width: min(720px, calc(100vw - 28px));
+  margin: 0 auto;
+  padding: 28px 20px;
+  background: rgba(14, 6, 6, 0.76);
+  border: 1px solid rgba(255, 215, 0, 0.16);
+  border-radius: 18px;
+  box-shadow: 0 28px 72px rgba(0,0,0,0.70);
+  backdrop-filter: blur(14px);
+}
+
+.form-head h1 {
+  margin: 0 0 10px;
+  font-size: clamp(34px, 6vw, 48px);
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+
+.form-head p {
+  margin: 0 0 18px;
+  text-align: center;
+  opacity: 0.88;
+  line-height: 1.5;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+  text-align: left;
+}
+
+.field > span {
+  font-size: 14px;
+  letter-spacing: 0.3px;
+  opacity: 0.9;
+}
+
+.field input,
+.field textarea {
+  width: 100%;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  background: rgba(0, 0, 0, 0.28);
+  color: rgba(255, 255, 255, 0.92);
+  outline: none;
+  font-size: 16px;
+  line-height: 1.4;
+  box-sizing: border-box;
+}
+
+.field textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.field input::placeholder,
+.field textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.field input:focus,
+.field textarea:focus {
+  border-color: rgba(255, 215, 0, 0.45);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.10);
+}
+
+.btn-full { width: 100%; }
+
+.btn-primary {
+  padding: 14px 16px;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 215, 0, 0.32);
+  background: rgba(255, 215, 0, 0.10);
+  color: rgba(255, 255, 255, 0.96);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  cursor: pointer;
+}
+
+.btn-primary:active {
+  transform: translateY(1px);
+}
+
+.form-footnote {
+  margin: 6px 0 0;
+  font-size: 13px;
+  opacity: 0.75;
+  line-height: 1.4;
+  text-align: center;
+}
+
+@media (min-width: 760px) {
+  .form-card { padding: 34px; }
+  .form-grid  { gap: 16px; }
+}

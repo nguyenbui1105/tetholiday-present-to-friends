@@ -78,30 +78,36 @@
   </section>
 
   <section id="s-form" class="screen">
-    <h1>Nhận lì xì</h1>
-    <p>Thông tin chỉ dùng để mình chuyển lì xì.</p>
+    <div class="form-card">
+      <div class="form-head">
+        <h1>Nhận lì xì</h1>
+        <p>Thông tin chỉ dùng để mình chuyển lì xì.</p>
+      </div>
 
-    <form id="giftForm">
-      <input type="hidden" id="playerName" name="playerName" />
-      <input type="hidden" id="amountInput" name="amount" />
+      <form id="giftForm" class="form-grid">
+        <input type="hidden" id="playerName" name="playerName" />
+        <input type="hidden" id="amountInput" name="amount" />
 
-      <label>
-        Ngân hàng
-        <input id="bankInput" name="bank" type="text" placeholder="VD: Vietcombank" required />
-      </label>
+        <label class="field">
+          <span>Ngân hàng</span>
+          <input id="bankInput" name="bank" type="text" placeholder="VD: Vietcombank" autocomplete="organization" required />
+        </label>
 
-      <label>
-        Số tài khoản
-        <input id="accountInput" name="account" type="text" placeholder="VD: 0123456789" inputmode="numeric" required />
-      </label>
+        <label class="field">
+          <span>Số tài khoản</span>
+          <input id="accountInput" name="account" type="text" inputmode="numeric" placeholder="VD: 0123456789" autocomplete="off" required />
+        </label>
 
-      <label>
-        Lời nhắn gửi Nguyên
-        <textarea id="messageInput" name="message" rows="4" placeholder="Viết gì đó dễ thương..." required></textarea>
-      </label>
+        <label class="field field-full">
+          <span>Lời nhắn gửi Nguyên</span>
+          <textarea id="messageInput" name="message" rows="4" placeholder="Viết gì đó dễ thương..." required></textarea>
+        </label>
 
-      <button id="btnSubmitGift" type="submit">Gửi cho Chủ Sòng</button>
-    </form>
+        <button id="btnSubmitGift" type="submit" class="btn-primary btn-full">Gửi cho Chủ Sòng</button>
+
+        <p class="form-footnote">🔒 Mình chỉ dùng thông tin để chuyển lì xì, không lưu gì linh tinh đâu.</p>
+      </form>
+    </div>
   </section>
 
   <section id="s-result" class="screen">
@@ -129,7 +135,7 @@
     </div>
   </div>
 
-  <script src="data.js?v=24"></script>
-  <script src="app.js?v=24"></script>
+  <script src="data.js?v=25"></script>
+  <script src="app.js?v=25"></script>
 </body>
 </html>
