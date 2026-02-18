@@ -1,5 +1,5 @@
 var SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzpWpEzwwZjhV0DJgxDPEZBuAhppiO1FGc5gXBhYCfq/exec';
-var SHEETS_API_KEY  = 'YOUR_REAL_KEY';
+var SHEETS_API_KEY  = '';
 var APP_VERSION     = '20260217b';
 
 function normalizeSheetsUrl(url) {
