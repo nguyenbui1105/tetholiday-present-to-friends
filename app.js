@@ -1,4 +1,4 @@
-var SHEETS_ENDPOINT = 'REPLACE_WITH_WEBAPP_EXEC_URL';
+var SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzpWpEzwwZjhV0DJgxDPEZBuAhppiO1FGc5gXBhYCfq/exec';
 var SHEETS_API_KEY  = 'API_KEY_VALUE';
 var APP_VERSION     = '20260217b';
 
