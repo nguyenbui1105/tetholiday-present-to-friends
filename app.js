@@ -1,6 +1,7 @@
 var SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzpWpEzwwZjhV0DJgxDPEZBuAhppiO1FGc5gXBhYCfq/exec';
 var SHEETS_API_KEY  = '';
 var APP_VERSION     = '20260217b';
+console.log('[BOOT] app.js loaded', APP_VERSION);
 
 function normalizeSheetsUrl(url) {
   return url.replace(/\/dev$/, '/exec');
@@ -33,6 +34,7 @@ async function submitToSheets(payload) {
   }
   return true;
 }
+window['__submitToSheets'] = submitToSheets;
 
 function formatVND(amount) {
   return amount.toLocaleString('vi-VN') + ' VND';
