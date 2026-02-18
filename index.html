@@ -47,17 +47,17 @@
   </section>
 
   <section id="s-reward" class="screen">
-    <h1>Phần thưởng</h1>
-
     <div id="rewardBox" class="reward-box" data-reward-state="A">
+      <h1 class="reward-title">Phần thưởng 🧧</h1>
+
       <div id="rewardClosed" style="display:block;">
-        <p>🎁 Một phần quà từ Chủ Sòng</p>
-        <button type="button" id="btnOpenReward">Mở quà</button>
+        <p class="reward-sub">Một phần quà từ Chủ Sòng dành riêng cho bạn.</p>
+        <button type="button" id="btnOpenReward">🎁 Mở quà</button>
       </div>
 
       <div id="rewardOpened" style="display:none;">
         <div id="envelopeStage" style="display:none;">
-          <p>Chọn 1 bao lì xì</p>
+          <p class="reward-sub">Chọn 1 bao lì xì bên dưới</p>
 
           <div id="envelopeGrid" class="envelope-grid">
             <button type="button" class="envelope" data-env="0">🧧</button>
@@ -71,7 +71,7 @@
         <div id="rewardResult" style="display:none;">
           <h2 id="amountText"></h2>
           <p id="wishText"></p>
-          <button type="button" onclick="goForm()">Nhận lì xì</button>
+          <button type="button" class="btn-claim" onclick="goForm()">Nhận lì xì →</button>
         </div>
       </div>
     </div>
@@ -129,7 +129,7 @@
     </div>
   </div>
 
-  <script src="data.js?v=22"></script>
-  <script src="app.js?v=22"></script>
+  <script src="data.js?v=23"></script>
+  <script src="app.js?v=23"></script>
 </body>
 </html>
