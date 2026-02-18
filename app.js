@@ -1093,8 +1093,12 @@ document.addEventListener('DOMContentLoaded', function () {
   };
 
   var form = document.getElementById('giftForm');
+  if (!form) { console.error('[SHEETS] giftForm not found in DOM'); }
+  else {
+  console.log('[SHEETS] form listener attached');
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    console.log('[SHEETS] Submit handler triggered');
     var submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
 
@@ -1124,16 +1128,20 @@ document.addEventListener('DOMContentLoaded', function () {
       wishes_json:       JSON.stringify(wishesObj)
     };
 
+    console.log('[SHEETS] Payload:', payload);
+
     submitToSheets(payload).then(function () {
       setClaimed(state.playerKey);
       form.reset();
       showScreen('s-end');
-    }).catch(function () {
+    }).catch(function (err) {
+      console.error('[SHEETS] Submit error:', err);
       alert('Gửi chưa thành công, thử lại giúp mình nhé.');
     }).finally(function () {
       submitBtn.disabled = false;
     });
   });
+  }
 
   // DEV panel: player state table + reset button
   if (DEV) {
