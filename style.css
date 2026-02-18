@@ -1140,3 +1140,101 @@ button:focus-visible {
   .form-card { padding: 34px; }
   .form-grid  { gap: 16px; }
 }
+
+/* ===== Wish-to-friends section ===== */
+.wish-section {
+  margin-top: 8px;
+}
+
+.wish-header {
+  margin-bottom: 14px;
+  text-align: center;
+}
+
+.wish-header h3 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: rgba(255, 215, 0, 0.92);
+}
+
+.wish-hint {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.75;
+  line-height: 1.5;
+}
+
+.wish-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 12px;
+}
+
+@media (min-width: 540px) {
+  .wish-grid { grid-template-columns: 1fr 1fr; }
+}
+
+.wish-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 215, 0, 0.14);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.wish-card-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wish-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255, 215, 0, 0.55);
+  box-shadow: 0 0 8px rgba(255, 215, 0, 0.20);
+  flex-shrink: 0;
+}
+
+.wish-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.90);
+}
+
+.wish-textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 215, 0, 0.18);
+  background: rgba(0, 0, 0, 0.28);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 14px;
+  line-height: 1.45;
+  resize: vertical;
+  min-height: 72px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.wish-textarea::placeholder {
+  color: rgba(255, 255, 255, 0.38);
+}
+
+.wish-textarea:focus {
+  border-color: rgba(255, 215, 0, 0.42);
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.09);
+}
+
+.wish-counter {
+  font-size: 11px;
+  opacity: 0.55;
+  text-align: right;
+  display: block;
+}

@@ -94,6 +94,12 @@ function getWins(playerKey)  { return parseInt(localStorage.getItem(winsKey(play
 function setWins(playerKey, n) { localStorage.setItem(winsKey(playerKey), String(n)); }
 function incWins(playerKey)  { var n = getWins(playerKey) + 1; setWins(playerKey, n); return n; }
 
+function wishesKey(playerKey) { return 'wishes_' + playerKey; }
+function getWishes(playerKey) {
+  try { return JSON.parse(localStorage.getItem(wishesKey(playerKey)) || '{}'); } catch (e) { return {}; }
+}
+function setWishes(playerKey, obj) { localStorage.setItem(wishesKey(playerKey), JSON.stringify(obj)); }
+
 function resetAllPlayerData() {
   PLAYERS.forEach(function (p) {
     localStorage.removeItem(pickedKey(p.key));
@@ -101,6 +107,7 @@ function resetAllPlayerData() {
     localStorage.removeItem(attemptKey(p.key));
     localStorage.removeItem(winsKey(p.key));
     localStorage.removeItem(rewardOrderKey(p.key));
+    localStorage.removeItem(wishesKey(p.key));
   });
 }
 
@@ -657,6 +664,74 @@ function renderReward() {
   }
 }
 
+function buildWishSection(playerKey) {
+  var section = document.getElementById('wishSection');
+  if (!section) return;
+  section.innerHTML = '';
+
+  var recipients = PLAYERS.filter(function (p) { return p.key !== playerKey; });
+  var saved = getWishes(playerKey);
+
+  var hdr = document.createElement('div');
+  hdr.className = 'wish-header';
+  var hdrTitle = document.createElement('h3');
+  hdrTitle.textContent = 'Gửi lời chúc';
+  var hdrHint = document.createElement('p');
+  hdrHint.className = 'wish-hint';
+  hdrHint.textContent = 'P/S: Khi cả nhóm hoàn thành, Chủ Sòng sẽ tổng hợp và bật mí một điều thú vị 😉';
+  hdr.appendChild(hdrTitle);
+  hdr.appendChild(hdrHint);
+  section.appendChild(hdr);
+
+  var grid = document.createElement('div');
+  grid.className = 'wish-grid';
+
+  recipients.forEach(function (p) {
+    var card = document.createElement('div');
+    card.className = 'wish-card';
+
+    var info = document.createElement('div');
+    info.className = 'wish-card-info';
+    var img = document.createElement('img');
+    img.src = p.avatar;
+    img.alt = p.name;
+    img.className = 'wish-avatar';
+    var nameEl = document.createElement('span');
+    nameEl.className = 'wish-name';
+    nameEl.textContent = p.name;
+    info.appendChild(img);
+    info.appendChild(nameEl);
+
+    var ta = document.createElement('textarea');
+    ta.className = 'wish-textarea';
+    ta.maxLength = 220;
+    ta.rows = 3;
+    ta.placeholder = 'Viết lời chúc cho ' + p.name + '\u2026';
+    ta.dataset.recipientKey = p.key;
+    ta.value = saved[p.key] || '';
+
+    var counter = document.createElement('span');
+    counter.className = 'wish-counter';
+    counter.textContent = (saved[p.key] || '').length + '/220';
+
+    ta.addEventListener('input', (function (recipientKey, counterEl) {
+      return function () {
+        var wishes = getWishes(playerKey);
+        wishes[recipientKey] = ta.value;
+        setWishes(playerKey, wishes);
+        counterEl.textContent = ta.value.length + '/220';
+      };
+    }(p.key, counter)));
+
+    card.appendChild(info);
+    card.appendChild(ta);
+    card.appendChild(counter);
+    grid.appendChild(card);
+  });
+
+  section.appendChild(grid);
+}
+
 function goForm() {
   if (!state.playerKey) {
     showScreen('s-pick');
@@ -672,6 +747,7 @@ function goForm() {
   var amt = document.getElementById('amountInput');
   if (pn) pn.value = state.playerName || '';
   if (amt) amt.value = String(state.amount || '');
+  buildWishSection(state.playerKey);
   showScreen('s-form');
 }
 
@@ -987,6 +1063,8 @@ document.addEventListener('DOMContentLoaded', function () {
   var form = document.getElementById('giftForm');
   form.addEventListener('submit', function (e) {
     e.preventDefault();
+    var wishesInput = document.getElementById('wishesJsonInput');
+    if (wishesInput) wishesInput.value = JSON.stringify(getWishes(state.playerKey));
     var submitBtn = form.querySelector('button[type="submit"]');
     submitBtn.disabled = true;
     fetch(FORMSPREE_ENDPOINT, {

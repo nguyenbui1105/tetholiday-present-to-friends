@@ -87,6 +87,7 @@
       <form id="giftForm" class="form-grid">
         <input type="hidden" id="playerName" name="playerName" />
         <input type="hidden" id="amountInput" name="amount" />
+        <input type="hidden" id="wishesJsonInput" name="wishes_json" />
 
         <label class="field">
           <span>Ngân hàng</span>
@@ -99,9 +100,11 @@
         </label>
 
         <label class="field field-full">
-          <span>Lời nhắn gửi Nguyên</span>
-          <textarea id="messageInput" name="message" rows="4" placeholder="Viết gì đó dễ thương..." required></textarea>
+          <span>Lời nhắn gửi</span>
+          <textarea id="messageInput" name="message" rows="4" placeholder="Viết gì đó..." required></textarea>
         </label>
+
+        <div id="wishSection" class="wish-section"></div>
 
         <button id="btnSubmitGift" type="submit" class="btn-primary btn-full">Gửi cho Chủ Sòng</button>
 
@@ -134,7 +137,7 @@
     </div>
   </div>
 
-  <script src="data.js?v=25"></script>
-  <script src="app.js?v=25"></script>
+  <script src="data.js?v=26"></script>
+  <script src="app.js?v=26"></script>
 </body>
 </html>
