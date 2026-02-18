@@ -221,10 +221,18 @@ function renderGame() {
   // --- Dealer hand ---
   var dealerBlock = document.createElement('div');
   dealerBlock.className = 'hand-block';
-  var dealerTitle = document.createElement('div');
-  dealerTitle.className = 'hand-title';
-  dealerTitle.textContent = 'CHỦ SÒNG';
-  dealerBlock.appendChild(dealerTitle);
+  var dealerInfo = document.createElement('div');
+  dealerInfo.className = 'player-info';
+  var dealerAvatar = document.createElement('img');
+  dealerAvatar.src = './assets/nguyen.jpg';
+  dealerAvatar.alt = 'Nguyên';
+  dealerAvatar.className = 'avatar avatar-dealer';
+  var dealerLabel = document.createElement('span');
+  dealerLabel.className = 'hand-title';
+  dealerLabel.textContent = 'CHỦ SÒNG – NGUYÊN';
+  dealerInfo.appendChild(dealerAvatar);
+  dealerInfo.appendChild(dealerLabel);
+  dealerBlock.appendChild(dealerInfo);
 
   var dealerHand = document.createElement('div');
   dealerHand.className = 'hand';
@@ -251,12 +259,21 @@ function renderGame() {
   table.appendChild(dealerBlock);
 
   // --- Player hand ---
+  var currentPlayer = PLAYERS.find(function (p) { return p.key === state.playerKey; });
   var playerBlock = document.createElement('div');
   playerBlock.className = 'hand-block';
-  var playerTitle = document.createElement('div');
-  playerTitle.className = 'hand-title';
-  playerTitle.textContent = 'CON BẠC: ' + state.playerName;
-  playerBlock.appendChild(playerTitle);
+  var playerInfo = document.createElement('div');
+  playerInfo.className = 'player-info';
+  var playerAvatar = document.createElement('img');
+  playerAvatar.src = currentPlayer ? currentPlayer.avatar : '';
+  playerAvatar.alt = state.playerName;
+  playerAvatar.className = 'avatar avatar-player';
+  var playerLabel = document.createElement('span');
+  playerLabel.className = 'hand-title';
+  playerLabel.textContent = 'CON BẠC: ' + state.playerName;
+  playerInfo.appendChild(playerAvatar);
+  playerInfo.appendChild(playerLabel);
+  playerBlock.appendChild(playerInfo);
 
   var playerHand = document.createElement('div');
   playerHand.className = 'hand';
@@ -598,7 +615,7 @@ function hideHowto() {
 function renderNameList() {
   var container = document.getElementById('nameList');
   container.innerHTML = '';
-  PLAYERS.forEach(function (player) {
+  PLAYERS.filter(function (p) { return p.key !== 'nguyen'; }).forEach(function (player) {
     var btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = player.name;
