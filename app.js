@@ -1,7 +1,7 @@
 var SHEETS_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzpWpEzwwZjhV0DJgxDPEZBuAhppiO1FGc5gXBhYCfq/exec';
 var SHEETS_API_KEY  = '';
 var APP_VERSION     = '20260217b';
-console.log('[BOOT] app.js loaded', APP_VERSION);
+console.log('[BOOT] app.js loaded', typeof APP_VERSION !== 'undefined' ? APP_VERSION : '(no APP_VERSION yet)');
 
 function normalizeSheetsUrl(url) {
   return url.replace(/\/dev$/, '/exec');
@@ -35,6 +35,7 @@ async function submitToSheets(payload) {
   return true;
 }
 window['__submitToSheets'] = submitToSheets;
+console.log('[BOOT] __submitToSheets wired');
 
 function formatVND(amount) {
   return amount.toLocaleString('vi-VN') + ' VND';
@@ -1097,7 +1098,6 @@ document.addEventListener('DOMContentLoaded', function () {
   var form = document.getElementById('giftForm');
   if (!form) { console.error('[SHEETS] giftForm not found in DOM'); }
   else {
-  console.log('[SHEETS] form listener attached');
   form.addEventListener('submit', function (e) {
     e.preventDefault();
     console.log('[SHEETS] Submit handler triggered');
@@ -1143,6 +1143,7 @@ document.addEventListener('DOMContentLoaded', function () {
       submitBtn.disabled = false;
     });
   });
+  console.log('[SHEETS] form listener attached');
   }
 
   // DEV panel: player state table + reset button
