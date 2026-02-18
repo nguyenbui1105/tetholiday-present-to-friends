@@ -2,17 +2,35 @@ var SHEETS_ENDPOINT = 'REPLACE_WITH_WEBAPP_EXEC_URL';
 var SHEETS_API_KEY  = 'API_KEY_VALUE';
 var APP_VERSION     = '20260217b';
 
+function normalizeSheetsUrl(url) {
+  return url.replace(/\/dev$/, '/exec');
+}
+
 async function submitToSheets(payload) {
-  var response = await fetch(SHEETS_ENDPOINT, {
+  var endpoint = normalizeSheetsUrl(SHEETS_ENDPOINT);
+  var headers  = { 'Content-Type': 'application/json' };
+  if (SHEETS_API_KEY) headers['X-API-Key'] = SHEETS_API_KEY;
+
+  if (typeof payload.wishes_json === 'object') {
+    payload.wishes_json = JSON.stringify(payload.wishes_json);
+  }
+  payload.amount = parseInt(payload.amount, 10) || 0;
+
+  var response = await fetch(endpoint, {
     method:  'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key':    SHEETS_API_KEY
-    },
-    body: JSON.stringify(payload)
+    headers: headers,
+    body:    JSON.stringify(payload)
   });
-  var json = await response.json();
-  if (!json.ok) throw new Error(json.error || 'server error');
+
+  var text = await response.text();
+  var json;
+  try { json = JSON.parse(text); } catch (_) { json = {}; }
+
+  if (DEV) console.log('[SHEETS]', endpoint, response.status, json.ok, text.slice(0, 200));
+
+  if (!json.ok) {
+    throw new Error('HTTP ' + response.status + ': ' + (json.error || text.slice(0, 120)));
+  }
   return true;
 }
 
@@ -1097,7 +1115,7 @@ document.addEventListener('DOMContentLoaded', function () {
       version:           APP_VERSION,
       player_key:        state.playerKey  || '',
       player_name:       state.playerName || '',
-      amount:            state.amount     || 0,
+      amount:            parseInt(state.amount, 10) || 0,
       amount_label:      reward.title     || '',
       bank_account:      ((document.getElementById('bankInput')    || {}).value || '') +
                          ' / ' +
