@@ -70,11 +70,17 @@ function resetAttempt(playerKey) {
   localStorage.removeItem(attemptKey(playerKey));
 }
 
+function winsKey(playerKey)  { return 'wins_' + playerKey; }
+function getWins(playerKey)  { return parseInt(localStorage.getItem(winsKey(playerKey)) || '0', 10); }
+function setWins(playerKey, n) { localStorage.setItem(winsKey(playerKey), String(n)); }
+function incWins(playerKey)  { var n = getWins(playerKey) + 1; setWins(playerKey, n); return n; }
+
 function resetAllPlayerData() {
   PLAYERS.forEach(function (p) {
     localStorage.removeItem(pickedKey(p.key));
     localStorage.removeItem(claimedKey(p.key));
     localStorage.removeItem(attemptKey(p.key));
+    localStorage.removeItem(winsKey(p.key));
   });
 }
 
@@ -214,9 +220,11 @@ function renderGame() {
   var table = document.createElement('div');
   table.className = 'table';
 
-  var h1 = document.createElement('h1');
-  h1.textContent = state.playerName;
-  table.appendChild(h1);
+  // --- Progress pill ---
+  var pill = document.createElement('div');
+  pill.className = 'progress-pill';
+  pill.textContent = 'Ván thắng: ' + getWins(state.playerKey) + ' / 3';
+  table.appendChild(pill);
 
   // --- Dealer hand ---
   var dealerBlock = document.createElement('div');
@@ -293,33 +301,11 @@ function renderGame() {
   playerBlock.appendChild(playerHand);
   table.appendChild(playerBlock);
 
-  // --- Status (only when finished) ---
-  if (g.finished) {
-    var status = document.createElement('p');
-    status.id = 'gameStatus';
-    status.textContent = g.statusText;
-    table.appendChild(status);
-  }
+  // --- Buttons (only during active play; result screen handles finished state) ---
+  if (!g.finished) {
+    var btnRow = document.createElement('div');
+    btnRow.className = 'btn-row';
 
-  // --- Reveal line (win only) ---
-  if (g.finished && g.outcome === 'win') {
-    var reveal = document.createElement('p');
-    reveal.className = 'reveal';
-    reveal.textContent = '✨ Ván này là: ' + g.winLabel;
-    table.appendChild(reveal);
-  }
-
-  // --- Buttons ---
-  var btnRow = document.createElement('div');
-  btnRow.className = 'btn-row';
-
-  if (g.finished && (g.outcome === 'lose' || g.outcome === 'draw')) {
-    var retryBtn = document.createElement('button');
-    retryBtn.type = 'button';
-    retryBtn.textContent = 'Chơi lại';
-    retryBtn.addEventListener('click', startGame);
-    btnRow.appendChild(retryBtn);
-  } else if (!g.finished) {
     var hitBtn = document.createElement('button');
     hitBtn.type = 'button';
     hitBtn.textContent = 'Bốc';
@@ -331,8 +317,9 @@ function renderGame() {
     standBtn.textContent = 'Thôi';
     standBtn.addEventListener('click', stand);
     btnRow.appendChild(standBtn);
+
+    table.appendChild(btnRow);
   }
-  table.appendChild(btnRow);
 
   section.appendChild(table);
 }
@@ -386,6 +373,7 @@ function hit() {
     bumpAttempt(state.playerKey);
     g.animateMode = 'bust';
     renderGame();
+    setTimeout(function () { showResult(); showScreen('s-result'); }, 900);
     return;
   }
 
@@ -397,6 +385,51 @@ function stand() {
   var g = state.game;
   if (g.finished) return;
   resolveRound();
+}
+
+function showResult() {
+  var g    = state.game;
+  var wins = getWins(state.playerKey);
+  var summary = document.getElementById('resultSummary');
+  summary.innerHTML = '';
+
+  // Dealer hand (fully revealed)
+  var dLabel = document.createElement('p');
+  dLabel.className = 'result-label';
+  dLabel.textContent = 'CHỦ SÒNG – NGUYÊN (' + calcTotal(g.dealerCards) + ')';
+  summary.appendChild(dLabel);
+  var dHand = document.createElement('div');
+  dHand.className = 'hand';
+  g.dealerCards.forEach(function (c) { dHand.appendChild(createCardEl(c, false, null, 0)); });
+  summary.appendChild(dHand);
+
+  // Player hand
+  var pLabel = document.createElement('p');
+  pLabel.className = 'result-label';
+  pLabel.textContent = 'CON BẠC: ' + state.playerName + ' (' + calcTotal(g.playerCards) + ')';
+  summary.appendChild(pLabel);
+  var pHand = document.createElement('div');
+  pHand.className = 'hand';
+  g.playerCards.forEach(function (c) { pHand.appendChild(createCardEl(c, false, null, 0)); });
+  summary.appendChild(pHand);
+
+  // Outcome + win label
+  var msg = document.createElement('p');
+  msg.className = 'result-outcome';
+  msg.textContent = g.statusText + (g.winLabel ? '  (' + g.winLabel + ')' : '');
+  summary.appendChild(msg);
+
+  // Progress
+  var prog = document.createElement('p');
+  prog.className = 'result-progress';
+  prog.textContent = 'Ván thắng: ' + wins + ' / 3';
+  summary.appendChild(prog);
+
+  // Update "Tiếp" button label
+  var btn = document.getElementById('btnResultNext');
+  if (btn) {
+    btn.textContent = (g.outcome === 'win' && wins >= 3) ? 'Nhận thưởng 🧧' : 'Tiếp tục';
+  }
 }
 
 function resolveRound() {
@@ -460,6 +493,7 @@ function resolveRound() {
 
   if (g.outcome === 'win') {
     resetAttempt(state.playerKey);
+    incWins(state.playerKey);
   } else {
     bumpAttempt(state.playerKey);
   }
@@ -467,9 +501,7 @@ function resolveRound() {
   g.animateMode = 'reveal';
   renderGame();
 
-  if (g.outcome === 'win') {
-    setTimeout(function () { showScreen('s-reward'); }, 700);
-  }
+  setTimeout(function () { showResult(); showScreen('s-result'); }, 700);
 }
 
 function setRewardState(s) {
@@ -888,6 +920,17 @@ document.addEventListener('DOMContentLoaded', function () {
   renderNameList();
 
   document.getElementById('btnHowtoClose').onclick = hideHowto;
+
+  document.getElementById('btnResultNext').onclick = function () {
+    var g = state.game;
+    var wins = getWins(state.playerKey);
+    if (g && g.outcome === 'win' && wins >= 3) {
+      showScreen('s-reward');
+    } else {
+      showScreen('s-game');
+      startGame();
+    }
+  };
 
   var form = document.getElementById('giftForm');
   form.addEventListener('submit', function (e) {
