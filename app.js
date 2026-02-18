@@ -1,6 +1,25 @@
 var FORMSPREE_ENDPOINT = 'https://formspree.io/f/xgolypwz';
 
-var ENVELOPES = [68000, 99000, 128000, 188000, 159000];
+function formatVND(amount) {
+  return amount.toLocaleString('vi-VN') + ' VND';
+}
+
+function rewardOrderKey(playerKey) { return 'rewardOrder_' + playerKey; }
+
+function getOrCreateRewardOrder(playerKey) {
+  var stored = localStorage.getItem(rewardOrderKey(playerKey));
+  if (stored) {
+    try { return JSON.parse(stored); } catch (e) {}
+  }
+  // Fisher-Yates shuffle of [0..4] indices into LUCKY_REWARDS
+  var order = [0, 1, 2, 3, 4];
+  for (var i = order.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var t = order[i]; order[i] = order[j]; order[j] = t;
+  }
+  localStorage.setItem(rewardOrderKey(playerKey), JSON.stringify(order));
+  return order;
+}
 
 /* ── Per-player bias ──────────────────────────────────────────
    After a standard 52-card shuffle, we nudge a couple of cards
@@ -81,6 +100,7 @@ function resetAllPlayerData() {
     localStorage.removeItem(claimedKey(p.key));
     localStorage.removeItem(attemptKey(p.key));
     localStorage.removeItem(winsKey(p.key));
+    localStorage.removeItem(rewardOrderKey(p.key));
   });
 }
 
@@ -598,11 +618,43 @@ function wireEnvelopeButtons() {
 
 function renderReward() {
   var player = PLAYERS.find(function (p) { return p.key === state.playerKey; });
-  var picked = getPickedEnvIndex(state.playerKey);
+  var picked  = getPickedEnvIndex(state.playerKey);
   if (picked === null) return;
-  state.amount = ENVELOPES[picked];
-  document.getElementById('amountText').textContent = 'Lì xì: ' + state.amount.toLocaleString('vi-VN') + 'đ';
-  document.getElementById('wishText').textContent = player ? player.wish : '';
+
+  var order  = getOrCreateRewardOrder(state.playerKey);
+  var reward = LUCKY_REWARDS[order[picked]];
+  state.amount = reward.amount;
+
+  document.getElementById('amountText').textContent = 'Lì xì: ' + formatVND(reward.amount);
+
+  var wishEl = document.getElementById('wishText');
+  wishEl.innerHTML = '';
+
+  // Reward title
+  var titleEl = document.createElement('strong');
+  titleEl.className = 'reward-reward-title';
+  titleEl.textContent = reward.title;
+  wishEl.appendChild(titleEl);
+
+  // Number meaning
+  var meaningEl = document.createElement('span');
+  meaningEl.className = 'reward-number-meaning';
+  meaningEl.textContent = reward.numberMeaning;
+  wishEl.appendChild(meaningEl);
+
+  // Blessing
+  var blessingEl = document.createElement('span');
+  blessingEl.className = 'reward-blessing';
+  blessingEl.textContent = reward.blessing;
+  wishEl.appendChild(blessingEl);
+
+  // Personal wish from Nguyen
+  if (player && player.wish) {
+    var wishMsgEl = document.createElement('span');
+    wishMsgEl.className = 'reward-personal-wish';
+    wishMsgEl.textContent = player.wish;
+    wishEl.appendChild(wishMsgEl);
+  }
 }
 
 function goForm() {

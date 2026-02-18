@@ -891,13 +891,41 @@ button:focus-visible {
   letter-spacing: 0.3px;
 }
 
+/* #wishText is now a container for structured reward content */
 #wishText {
-  font-size: 17px;
-  line-height: 1.78;
-  opacity: 0.90;
-  max-width: 48ch;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 46ch;
   margin: 0 auto 26px;
   text-align: left;
+  line-height: 1.68;
+}
+
+.reward-reward-title {
+  font-size: 20px;
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: 0.3px;
+}
+
+.reward-number-meaning {
+  font-size: 13px;
+  opacity: 0.68;
+  letter-spacing: 0.2px;
+}
+
+.reward-blessing {
+  font-size: 16px;
+  opacity: 0.92;
+}
+
+.reward-personal-wish {
+  font-size: 15px;
+  opacity: 0.78;
+  border-top: 1px solid rgba(255, 215, 0, 0.14);
+  padding-top: 10px;
+  margin-top: 2px;
   white-space: pre-line;
 }
 
