@@ -1143,7 +1143,7 @@ document.addEventListener('DOMContentLoaded', function () {
       submitBtn.disabled = false;
     });
   });
-  console.log('[SHEETS] form listener attached');
+  console.log('[SHEETS] form listener attached', { formId: form.id, formClass: form.className });
   }
 
   // DEV panel: player state table + reset button
