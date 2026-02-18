@@ -1160,10 +1160,14 @@ button:focus-visible {
 }
 
 .wish-hint {
-  margin: 0;
-  font-size: 13px;
-  opacity: 0.75;
-  line-height: 1.5;
+  margin: 8px auto 26px;
+  max-width: 520px;
+  text-align: center;
+  font-size: 15px;
+  line-height: 1.6;
+  letter-spacing: 0.3px;
+  color: rgba(255, 215, 0, 0.85);
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.25);
 }
 
 .wish-grid {

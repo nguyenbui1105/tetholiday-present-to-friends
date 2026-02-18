@@ -678,7 +678,7 @@ function buildWishSection(playerKey) {
   hdrTitle.textContent = 'Gửi lời chúc';
   var hdrHint = document.createElement('p');
   hdrHint.className = 'wish-hint';
-  hdrHint.textContent = 'P/S: Khi cả nhóm hoàn thành, Chủ Sòng sẽ tổng hợp và bật mí một điều thú vị 😉';
+  hdrHint.innerHTML = 'P/S: Khi cả nhóm hoàn thành,<br>Chủ Sòng sẽ tổng hợp và bật mí một điều thú vị 😉';
   hdr.appendChild(hdrTitle);
   hdr.appendChild(hdrHint);
   section.appendChild(hdr);
