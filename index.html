@@ -3,17 +3,42 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
   <title>Chủ Sòng</title>
-  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./style.css?v=20260217b" />
 </head>
 <body>
 
   <section id="s-letter" class="screen active">
-    <h1>Thư từ Chủ Sòng</h1>
-    <p>Chào mừng bạn đến với sòng của tôi.</p>
-    <p>Ván này tôi lo.</p>
-    <button id="btnLetterNext">Vào sòng</button>
+    <div class="letter-wrap">
+      <h1>Thư từ Chủ Sòng</h1>
+      <p class="letter-headline">Chào mừng bạn đến với sòng bài của Chủ Sòng – Nguyên</p>
+      <div class="letter-body">
+        <p>Hi cạc bạn, là Nguyên đây. Cũng hai cái Tết rồi Nguyên không về được. Hy vọng mọi người đều khỏe cả. Năm mới Nguyên chúc mọi người bình an, may mắn và thành công trong mọi việc nhá.</p>
+        <p>Nguyên cụng muốn về rồi, nhưng mà cụng không muốn về kaka. Tại bên này còn nhiều thứ Nguyên phải lo quá nên Nguyên chưa thoải mái về được, mong mọi người thông cảm hỉ.</p>
+        <p>Nguyên muốn đóng góp tí Tết với mọi người nên đã làm cấy hơi mát mát ni hehe.</p>
+        <p>Hy vọng mọi người enjoy it hấy.</p>
+      </div>
+      <div class="sticker-bar">
+        <div class="sticker"><img src="./assets/nguyen.jpg" alt="Nguyên"><span>Nguyên</span></div>
+        <div class="sticker"><img src="./assets/han_bui.jpg" alt="Hân Bùi"><span>Hân Bùi</span></div>
+        <div class="sticker"><img src="./assets/boi.jpg" alt="Boi"><span>Boi</span></div>
+        <div class="sticker"><img src="./assets/ngan.jpg" alt="Ngân"><span>Ngân</span></div>
+        <div class="sticker"><img src="./assets/diep.jpg" alt="Diệp"><span>Diệp</span></div>
+        <div class="sticker"><img src="./assets/ngoc.jpg" alt="Ngọc"><span>Ngọc</span></div>
+      </div>
+      <div class="letter-actions">
+        <button type="button" id="btnPreviewFireworks" class="btn-secondary">Bắn pháo hoa cái đã nàooo 🎆</button>
+        <button type="button" id="btnLetterNext">Vào sòng</button>
+      </div>
+    </div>
   </section>
+
+  <div id="fwOverlay" aria-hidden="true">
+    <canvas id="fwCanvas"></canvas>
+  </div>
 
   <section id="s-pick" class="screen">
     <h1>Chọn tên của bạn</h1>
@@ -25,14 +50,17 @@
   </section>
 
   <section id="s-reward" class="screen">
-    <h1>Phần thưởng</h1>
+    <div id="rewardBox" class="reward-box" data-reward-state="A">
+      <h1 class="reward-title">Phần thưởng 🧧</h1>
 
-    <div id="rewardBox" class="reward-box">
-      <div id="rewardClosed" style="display:none;"></div>
+      <div id="rewardClosed" style="display:block;">
+        <p class="reward-sub">Một phần quà từ Chủ Sòng dành riêng cho bạn.</p>
+        <button type="button" id="btnOpenReward">🎁 Mở quà</button>
+      </div>
 
-      <div id="rewardOpened" style="display: none;">
-        <div id="envelopeStage">
-          <p>Chọn 1 bao lì xì (bốc 1 lần thôi nha 😎)</p>
+      <div id="rewardOpened" style="display:none;">
+        <div id="envelopeStage" style="display:none;">
+          <p class="reward-sub">Chọn 1 bao lì xì bên dưới</p>
 
           <div id="envelopeGrid" class="envelope-grid">
             <button type="button" class="envelope" data-env="0">🧧</button>
@@ -46,44 +74,73 @@
         <div id="rewardResult" style="display:none;">
           <h2 id="amountText"></h2>
           <p id="wishText"></p>
-          <button type="button" onclick="goForm()">Nhận lì xì</button>
+          <button type="button" class="btn-claim" onclick="goForm()">Nhận lì xì →</button>
         </div>
       </div>
     </div>
   </section>
 
   <section id="s-form" class="screen">
-    <h1>Nhận lì xì</h1>
-    <p>Thông tin chỉ dùng để mình chuyển lì xì.</p>
+    <div class="form-card">
+      <div class="form-head">
+        <h1>Nhận lì xì</h1>
+        <p>Thông tin chỉ dùng để mình chuyển lì xì.</p>
+      </div>
 
-    <form id="giftForm">
-      <input type="hidden" id="playerName" name="playerName" />
-      <input type="hidden" id="amountInput" name="amount" />
+      <form id="giftForm" class="form-grid">
+        <input type="hidden" id="playerName" name="playerName" />
+        <input type="hidden" id="amountInput" name="amount" />
+        <input type="hidden" id="wishesJsonInput" name="wishes_json" />
 
-      <label>
-        Ngân hàng
-        <input id="bankInput" name="bank" type="text" placeholder="VD: Vietcombank" required />
-      </label>
+        <label class="field">
+          <span>Ngân hàng</span>
+          <input id="bankInput" name="bank" type="text" placeholder="VD: Vietcombank" autocomplete="organization" required />
+        </label>
 
-      <label>
-        Số tài khoản
-        <input id="accountInput" name="account" type="text" placeholder="VD: 0123456789" inputmode="numeric" required />
-      </label>
+        <label class="field">
+          <span>Số tài khoản</span>
+          <input id="accountInput" name="account" type="text" inputmode="numeric" placeholder="VD: 0123456789" autocomplete="off" required />
+        </label>
 
-      <label>
-        Lời nhắn gửi Nguyên
-        <textarea id="messageInput" name="message" rows="4" placeholder="Viết gì đó dễ thương..." required></textarea>
-      </label>
+        <label class="field field-full">
+          <span>Lời nhắn gửi</span>
+          <textarea id="messageInput" name="message" rows="4" placeholder="Viết gì đó..." required></textarea>
+        </label>
 
-      <button id="btnSubmitGift" type="submit">Gửi cho Chủ Sòng</button>
-    </form>
+        <div id="wishSection" class="wish-section"></div>
+
+        <button id="btnSubmitGift" type="submit" class="btn-primary btn-full">Gửi cho Chủ Sòng</button>
+
+      </form>
+    </div>
+  </section>
+
+  <section id="s-result" class="screen">
+    <div class="card result-card">
+      <h1>Kết quả ván</h1>
+      <div id="resultSummary"></div>
+      <button type="button" id="btnResultNext">Tiếp tục</button>
+    </div>
   </section>
 
   <section id="s-end" class="screen">
     <h1>Hẹn gặp lại</h1>
   </section>
 
-  <script src="data.js?v=7"></script>
-  <script src="app.js?v=7"></script>
+  <div id="howtoOverlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal-card">
+      <h2>Luật chơi nhanh</h2>
+      <ul>
+        <li><strong>Bốc</strong> — rút thêm 1 lá bài.</li>
+        <li><strong>Thôi</strong> — dừng, để Chủ Sòng lật bài chốt.</li>
+        <li>Quắc (&gt;21) → được chơi lại không mất lượt.</li>
+        <li>Thắng <strong>3 ván</strong> (3/3) mới mở được lì xì 🧧</li>
+      </ul>
+      <button type="button" id="btnHowtoClose">Đã hiểu 😎</button>
+    </div>
+  </div>
+
+  <script src="data.js?v=20260217b"></script>
+  <script src="app.js?v=20260217b"></script>
 </body>
 </html>
